@@ -1,17 +1,16 @@
 {
+  "version": 2,
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/build",
   "functions": {
-    "backend/src/server.js": {
-      "runtime": "nodejs18.x"
+    "api/**/*.js": {
+      "runtime": "nodejs20.x"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/src/server.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/build/$1"
+      "destination": "/api/index.js"
     }
   ]
 }
