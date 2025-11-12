@@ -1,55 +1,57 @@
-const { Pool } = require('pg');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
 require('dotenv').config({ path: './backend/.env' });
 
 async function setupDatabase() {
-  const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-  });
+  const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/escape-room-app';
 
   try {
-    // Create database if it doesn't exist
-    await pool.query(`CREATE DATABASE ${process.env.DB_NAME}`);
-    console.log(`Database ${process.env.DB_NAME} created successfully`);
-  } catch (error) {
-    if (error.code === '42P04') {
-      console.log(`Database ${process.env.DB_NAME} already exists`);
-    } else {
-      console.error('Error creating database:', error.message);
-    }
-  }
+    // Connect to MongoDB with modern options
+    await mongoose.connect(mongoURI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 20000,
+      maxPoolSize: 10,
+      minPoolSize: 2,
+      retryWrites: true,
+      w: 'majority'
+    });
+    console.log('MongoDB connected');
 
-  await pool.end();
-
-  // Connect to the created database and run schema
-  const dbPool = new Pool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-  });
-
-  try {
-    const schema = fs.readFileSync(path.join(__dirname, 'database', 'schema.sql'), 'utf8');
-    const queries = schema.split(';').filter(query => query.trim());
-    
-    for (const query of queries) {
-      if (query.trim()) {
-        await dbPool.query(query);
+    // Initialize indexes for all models
+    const models = require('./backend/src/models');
+    const initPromises = Object.values(models).map(model => {
+      if (typeof model.init === 'function') {
+        return model.init();
       }
-    }
-    
-    console.log('Database schema created successfully');
-  } catch (error) {
-    console.error('Error setting up schema:', error.message);
-  }
+      return Promise.resolve();
+    });
+    await Promise.all(initPromises);
+    console.log('Model indexes initialized');
 
-  await dbPool.end();
+    // Seed default settings if none exist
+    const { Settings } = models;
+    const existingSettings = await Settings.findOne();
+    if (!existingSettings) {
+      const defaultSettings = new Settings({
+        settings: {
+          quizEnabled: true,
+          leaderboardEnabled: true,
+          gameEnabled: true,
+          maxTeamSize: 4
+        }
+      });
+      await defaultSettings.save();
+      console.log('Default settings seeded');
+    } else {
+      console.log('Settings already exist; skipping seed');
+    }
+
+    console.log('MongoDB setup completed successfully');
+  } catch (error) {
+    console.error('MongoDB setup error:', error);
+    process.exit(1);
+  } finally {
+    await mongoose.disconnect();
+  }
 }
 
 setupDatabase();

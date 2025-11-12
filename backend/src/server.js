@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const connectDB = require('./utils/mongodb');
 
 const authRoutes = require('./routes/auth');
 const teamRoutes = require('./routes/teams');
@@ -11,6 +13,7 @@ const resultsRoutes = require('./routes/results');
 const leaderboardRoutes = require('./routes/leaderboard');
 const quizRoutes = require('./routes/quiz');
 const settingsRoutes = require('./routes/settings');
+const systemRoutes = require('./routes/system');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,8 +33,12 @@ app.use('/api/results', resultsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/quiz', quizRoutes);
 console.log('Quiz route registered at /api/quiz');
+app.use('/quiz', quizRoutes);
+console.log('Quiz public routes registered at /quiz');
 app.use('/api/settings', settingsRoutes);
 console.log('Settings route registered at /api/settings');
+app.use('/api/system', systemRoutes);
+console.log('System route registered at /api/system');
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -50,13 +57,19 @@ app.use('*', (req, res) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log('Available routes:');
-    console.log('- /api/teams (GET, POST, PUT, DELETE)');
-    console.log('- /api/quiz (GET, POST)');
-    console.log('- /api/quiz/create (POST)');
-    console.log('- /api/settings (GET, POST)');
+  // Connect to MongoDB first
+  connectDB().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log('Available routes:');
+      console.log('- /api/teams (GET, POST, PUT, DELETE)');
+      console.log('- /api/quiz (GET, POST)');
+      console.log('- /api/quiz/create (POST)');
+      console.log('- /api/settings (GET, POST)');
+    });
+  }).catch(error => {
+    console.error('Failed to connect to MongoDB:', error);
+    process.exit(1);
   });
 }
 

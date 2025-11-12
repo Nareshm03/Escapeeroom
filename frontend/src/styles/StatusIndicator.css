@@ -1,0 +1,148 @@
+/* Status Indicator Styles */
+
+.status-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: var(--space-1);
+  cursor: pointer;
+}
+
+.status-icon {
+  font-size: 16px;
+  line-height: 1;
+  transition: all var(--transition-base);
+}
+
+.status-value {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-secondary);
+  transition: all var(--transition-base);
+}
+
+.status-indicator:hover .status-icon,
+.status-indicator:hover .status-value {
+  transform: scale(1.1);
+}
+
+/* Tooltip */
+.status-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(11, 15, 26, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 200px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.status-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid rgba(255, 255, 255, 0.2);
+}
+
+.tooltip-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.tooltip-status {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 4px;
+}
+
+.tooltip-updated {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+
+.tooltip-action {
+  width: 100%;
+  padding: 6px 12px;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.tooltip-action:hover {
+  background: #8B6FFF;
+  transform: translateY(-1px);
+}
+
+/* Status Colors */
+.status-active {
+  color: var(--secondary);
+}
+
+.status-inactive {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.status-warning {
+  color: var(--tertiary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .status-tooltip {
+    min-width: 180px;
+    padding: 10px 12px;
+  }
+
+  .tooltip-header {
+    font-size: 13px;
+  }
+
+  .tooltip-status,
+  .tooltip-updated {
+    font-size: 12px;
+  }
+}
+
+/* Touch devices */
+@media (pointer: coarse) {
+  .status-indicator {
+    padding: 4px;
+  }
+}
+
+/* Accessibility */
+.status-indicator:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .status-tooltip {
+    border: 2px solid white;
+    background: black;
+  }
+}

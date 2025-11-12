@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 import api from '../services/api';
+import EnhancedStatCard from '../components/EnhancedStatCard';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -72,7 +73,9 @@ const Dashboard = () => {
   ];
 
   const StatCard = ({ icon, title, value, subtitle, delay, color = '#667eea', gradient }) => (
-    <div 
+    <div
+      role="article"
+      aria-label={`${title}: ${value}. ${subtitle}`}
       className="dashboard-card bounce-in" 
       style={{ 
         animationDelay: `${delay}s`,
@@ -109,7 +112,8 @@ const Dashboard = () => {
 
   const ActionCard = ({ to, icon, title, desc, color, delay }) => (
     <Link 
-      to={to} 
+      to={to}
+      aria-label={`${title}: ${desc}`}
       className="scale-in" 
       style={{ 
         background: color,
@@ -152,7 +156,7 @@ const Dashboard = () => {
   return (
     <div className="container">
       {/* Hero Section */}
-      <div className="slide-in-left" style={{ textAlign: 'center', marginBottom: '48px', position: 'relative' }}>
+      <section aria-labelledby="hero-heading" className="slide-in-left" style={{ textAlign: 'center', marginBottom: '48px', position: 'relative' }}>
         <div style={{
           position: 'absolute',
           top: '-20px',
@@ -165,7 +169,7 @@ const Dashboard = () => {
           animation: 'float 6s ease-in-out infinite',
           zIndex: -1
         }}></div>
-        <h1 style={{
+        <h1 id="hero-heading" style={{
           fontSize: '3rem',
           fontWeight: '800',
           background: 'linear-gradient(135deg, #667eea, #f093fb, #4facfe)',
@@ -188,51 +192,49 @@ const Dashboard = () => {
         }}>
           Ready to challenge your mind? Dive into exciting escape room adventures and test your problem-solving skills.
         </p>
-      </div>
+      </section>
 
       {/* Stats Dashboard */}
-      <div className="dashboard-grid" style={{ marginBottom: '48px' }}>
-        <StatCard 
-          icon="👥" 
-          title="Total Teams" 
-          value={stats.totalTeams} 
-          subtitle="Active teams in system"
+      <section aria-labelledby="stats-heading" className="stats-grid">
+        <h2 id="stats-heading" className="sr-only">Dashboard Statistics</h2>
+        <EnhancedStatCard
+          icon="👥"
+          value={stats.totalTeams}
+          label="Total Teams"
+          trend={3}
           color="#667eea"
-          gradient={['#667eea', '#764ba2']}
-          delay={0.1}
+          loading={isLoading}
         />
-        <StatCard 
-          icon="🎮" 
-          title="Active Games" 
-          value={stats.activeGames} 
-          subtitle="Currently running"
+        <EnhancedStatCard
+          icon="🎮"
+          value={stats.activeGames}
+          label="Active Games"
+          trend={1}
           color="#f093fb"
-          gradient={['#f093fb', '#f5576c']}
-          delay={0.2}
+          loading={isLoading}
         />
-        <StatCard 
-          icon="🏆" 
-          title="Completed" 
-          value={stats.completedQuizzes} 
-          subtitle="Total quiz attempts"
+        <EnhancedStatCard
+          icon="🏁"
+          value={stats.completedQuizzes}
+          label="Completed"
+          trend={-2}
           color="#4facfe"
-          gradient={['#4facfe', '#00f2fe']}
-          delay={0.3}
+          loading={isLoading}
         />
-        <StatCard 
-          icon="⭐" 
-          title="Avg Score" 
-          value={`${stats.averageScore}%`} 
-          subtitle="Overall performance"
+        <EnhancedStatCard
+          icon="⭐"
+          value={stats.averageScore}
+          label="Avg Score"
+          trend={5}
           color="#43e97b"
-          gradient={['#43e97b', '#38f9d7']}
-          delay={0.4}
+          isPercentage={true}
+          loading={isLoading}
         />
-      </div>
+      </section>
 
       {/* Quick Actions */}
-      <div className="card fade-in" style={{ animationDelay: '0.5s' }}>
-        <h2 style={{ 
+      <section aria-labelledby="quick-actions-heading" className="card fade-in" style={{ animationDelay: '0.5s' }}>
+        <h2 id="quick-actions-heading" style={{ 
           fontSize: '1.5rem', 
           fontWeight: '600', 
           marginBottom: '24px',
@@ -256,12 +258,12 @@ const Dashboard = () => {
             />
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Admin Section */}
       {user?.email === 'admin@escaperoom.com' && (
-        <div className="card fade-in" style={{ animationDelay: '1s' }}>
-          <h2 style={{ 
+        <section aria-labelledby="admin-controls-heading" className="card fade-in" style={{ animationDelay: '1s' }}>
+          <h2 id="admin-controls-heading" style={{ 
             fontSize: '1.5rem', 
             fontWeight: '600', 
             marginBottom: '24px',
@@ -285,11 +287,11 @@ const Dashboard = () => {
               />
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Motivational Quote */}
-      <div className="card fade-in" style={{ 
+      <section aria-labelledby="quote-heading" className="card fade-in" style={{ 
         animationDelay: '1.5s',
         textAlign: 'center',
         background: '#f8fafc',
@@ -306,7 +308,7 @@ const Dashboard = () => {
           "The key to escape is not just in solving puzzles, but in thinking outside the box."
         </h3>
         <p style={{ color: '#64748b', fontSize: '14px' }}>Ready to unlock your potential?</p>
-      </div>
+      </section>
     </div>
   );
 };

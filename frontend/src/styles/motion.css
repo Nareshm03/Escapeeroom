@@ -1,0 +1,146 @@
+/* Motion Design System */
+
+:root {
+  --motion-duration-fast: 300ms;
+  --motion-duration-normal: 400ms;
+  --motion-duration-slow: 600ms;
+  --motion-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-easing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-stagger-delay: 100ms;
+}
+
+/* Section Animations */
+.animate-fade-in {
+  animation: fadeIn var(--motion-duration-normal) var(--motion-easing-smooth) both;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--motion-duration-normal) var(--motion-easing-smooth) both;
+}
+
+.animate-slide-left {
+  animation: slideLeft var(--motion-duration-normal) var(--motion-easing-smooth) both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(20px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Staggered Delays */
+.stagger-1 { animation-delay: calc(var(--motion-stagger-delay) * 1); }
+.stagger-2 { animation-delay: calc(var(--motion-stagger-delay) * 2); }
+.stagger-3 { animation-delay: calc(var(--motion-stagger-delay) * 3); }
+.stagger-4 { animation-delay: calc(var(--motion-stagger-delay) * 4); }
+.stagger-5 { animation-delay: calc(var(--motion-stagger-delay) * 5); }
+.stagger-6 { animation-delay: calc(var(--motion-stagger-delay) * 6); }
+
+/* Card Parallax Effect */
+.card-parallax {
+  transition: transform var(--motion-duration-fast) var(--motion-easing-smooth);
+  will-change: transform;
+}
+
+.card-parallax:hover {
+  transform: translate3d(0, -3px, 0);
+}
+
+/* Performance Optimizations */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+.glass-stat-card,
+.action-tile,
+.live-leaderboard-widget {
+  will-change: transform;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-slide-left {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .card-parallax:hover {
+    transform: none;
+  }
+
+  .will-animate,
+  .glass-stat-card,
+  .action-tile,
+  .live-leaderboard-widget {
+    will-change: auto;
+  }
+}
+
+/* Spring Physics Simulation */
+.spring-bounce {
+  animation: springBounce var(--motion-duration-slow) var(--motion-easing-spring) both;
+}
+
+@keyframes springBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translate3d(0, 0, 0);
+  }
+  60% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+/* Hover Parallax Variants */
+.parallax-up:hover {
+  transform: translate3d(0, -4px, 0);
+}
+
+.parallax-right:hover {
+  transform: translate3d(2px, -2px, 0);
+}
+
+.parallax-left:hover {
+  transform: translate3d(-2px, -2px, 0);
+}

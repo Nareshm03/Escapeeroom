@@ -1,0 +1,111 @@
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  contain: layout style paint;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Stat Card Skeletons */
+.skeleton-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.skeleton-badge {
+  width: 70px;
+  height: 24px;
+  border-radius: 12px;
+}
+
+.skeleton-value {
+  width: 80px;
+  height: 40px;
+  margin-bottom: 12px;
+}
+
+.skeleton-label {
+  width: 100px;
+  height: 14px;
+}
+
+.skeleton-sparkline {
+  width: 80px;
+  height: 30px;
+}
+
+/* Tile Skeletons */
+.skeleton-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.skeleton-tile-label {
+  flex: 1;
+  height: 16px;
+  max-width: 120px;
+}
+
+.skeleton-chevron {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+/* Leaderboard Skeletons */
+.skeleton-leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 4px;
+}
+
+.skeleton-rank {
+  width: 30px;
+  height: 14px;
+}
+
+.skeleton-team {
+  flex: 1;
+  height: 14px;
+  max-width: 120px;
+}
+
+.skeleton-stage {
+  width: 40px;
+  height: 14px;
+}
+
+.skeleton-time {
+  width: 50px;
+  height: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: #e0e0e0;
+  }
+}

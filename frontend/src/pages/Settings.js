@@ -1,91 +1,52 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useSettings } from '../utils/SettingsContext';
+import { useToast } from '../utils/ToastContext';
+import { useSystemStatus } from '../hooks/useSystemStatus';
+import StatusIndicator from '../components/StatusIndicator';
+import '../styles/Settings.css';
 
 const Settings = () => {
   const { settings, setSettings, updateSettings } = useSettings();
+  const { success, error, warning } = useToast();
+  const { status, refreshStatus } = useSystemStatus();
 
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-
-  // eslint-disable-next-line no-use-before-define
-  useEffect(() => {
-    const cleanup = applySecuritySettings();
-    return cleanup;
-  }, [applySecuritySettings]);
-
-
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const saveSettings = async () => {
     try {
       setLoading(true);
-      const success = await updateSettings(settings);
-      if (success) {
-        setMessage('✅ Settings saved successfully!');
-        setTimeout(() => setMessage(''), 3000);
+      const result = await updateSettings(settings);
+      if (result) {
+        success('Settings saved successfully!');
+        setHasUnsavedChanges(false);
       } else {
-        setMessage('❌ Failed to save settings');
-        setTimeout(() => setMessage(''), 5000);
+        error('Failed to save settings');
       }
-    } catch (error) {
-      setMessage('❌ Failed to save settings: ' + error.message);
-      setTimeout(() => setMessage(''), 5000);
+    } catch (err) {
+      error('Failed to save settings: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKeyDown = useCallback((e) => {
-    if (!settings.allowCut && (e.ctrlKey && e.key === 'x')) e.preventDefault();
-    if (!settings.allowCopy && (e.ctrlKey && e.key === 'c')) e.preventDefault();
-    if (!settings.allowPaste && (e.ctrlKey && e.key === 'v')) e.preventDefault();
-    if (!settings.allowPrint && (e.ctrlKey && e.key === 'p')) e.preventDefault();
-  }, [settings.allowCut, settings.allowCopy, settings.allowPaste, settings.allowPrint]);
-
-  const handleContextMenu = useCallback((e) => {
-    if (!settings.allowRightClick) e.preventDefault();
-  }, [settings.allowRightClick]);
-
-  const handleBeforeUnload = useCallback((e) => {
-    e.preventDefault();
-    e.returnValue = '';
-  }, []);
-
-  const applySecuritySettings = useCallback(() => {
-    // Clean up existing listeners
-    document.removeEventListener('keydown', handleKeyDown);
-    document.removeEventListener('contextmenu', handleContextMenu);
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-    
-    // Apply new settings
-    if (!settings.allowCut || !settings.allowCopy || !settings.allowPaste || !settings.allowPrint) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-    
-    if (!settings.allowRightClick) {
-      document.addEventListener('contextmenu', handleContextMenu);
-    }
-    
-    if (settings.confirmBeforeCloseBrowser) {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-    }
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [settings.allowCut, settings.allowCopy, settings.allowPaste, settings.allowRightClick, settings.allowPrint, settings.confirmBeforeCloseBrowser, handleKeyDown, handleContextMenu, handleBeforeUnload]);
-
-
-
   const handleChange = (field, value) => {
     setSettings({ ...settings, [field]: value });
+    setHasUnsavedChanges(true);
+  };
+
+  const resetSettings = () => {
+    if (hasUnsavedChanges) {
+      warning('Unsaved changes will be lost');
+    }
+    window.location.reload();
   };
 
   const renderGeneral = () => (
     <div>
-      <h3 style={{ color: '#4a5568', marginBottom: '20px' }}>🎯 General Settings</h3>
+      <h3 className="settings-section-title">🎯 General Settings</h3>
+      
       <div className="form-group">
         <label>Application Name</label>
         <input
@@ -96,14 +57,9 @@ const Settings = () => {
         />
         <small>This name will appear throughout the application</small>
       </div>
-    </div>
-  );
 
-  const renderDisplay = () => (
-    <div>
-      <h3 style={{ color: '#4a5568', marginBottom: '20px' }}>🎨 Display Settings</h3>
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.showQuizName}
@@ -113,8 +69,9 @@ const Settings = () => {
         </label>
         <small>Display the application name in the navigation bar</small>
       </div>
+
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.showPageTitles}
@@ -124,8 +81,9 @@ const Settings = () => {
         </label>
         <small>Display titles on each page</small>
       </div>
+
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.showProgressBar}
@@ -135,8 +93,9 @@ const Settings = () => {
         </label>
         <small>Display progress indicators during quizzes</small>
       </div>
+
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.showPageNumberBar}
@@ -146,8 +105,9 @@ const Settings = () => {
         </label>
         <small>Display page numbers in multi-page quizzes</small>
       </div>
+
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.showLogo}
@@ -157,14 +117,40 @@ const Settings = () => {
         </label>
         <small>Display company/organization logo</small>
       </div>
+
+      <div className="form-group">
+        <label>Question Layout</label>
+        <select
+          value={settings.questionLayout}
+          onChange={(e) => handleChange('questionLayout', e.target.value)}
+        >
+          <option value="vertical">Vertical</option>
+          <option value="horizontal">Horizontal</option>
+        </select>
+        <small>Options can be positioned under the question text (Vertical) or to the right (Horizontal)</small>
+      </div>
+
+      <div className="form-group">
+        <label>Navigation Bar Position</label>
+        <select
+          value={settings.navigationBarPosition}
+          onChange={(e) => handleChange('navigationBarPosition', e.target.value)}
+        >
+          <option value="fixed">Fixed</option>
+          <option value="bottom">Bottom</option>
+          <option value="top">Top</option>
+        </select>
+        <small>Position of navigation buttons on the page</small>
+      </div>
     </div>
   );
 
-  const renderTimeSettings = () => (
+  const renderEvent = () => (
     <div>
-      <h3 style={{ color: '#4a5568', marginBottom: '20px' }}>⏰ Time Settings</h3>
+      <h3 className="settings-section-title">⏰ Event Settings</h3>
+      
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.hasTimeLimit}
@@ -174,6 +160,7 @@ const Settings = () => {
         </label>
         <small>Set a time limit for the entire quiz/game session</small>
       </div>
+
       {settings.hasTimeLimit && (
         <div className="form-group">
           <label>Global Time Limit (minutes)</label>
@@ -189,7 +176,7 @@ const Settings = () => {
       )}
       
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.pageTimeLimits}
@@ -199,6 +186,7 @@ const Settings = () => {
         </label>
         <small>Set time limits for individual questions or stages</small>
       </div>
+
       {settings.pageTimeLimits && (
         <div className="form-group">
           <label>Default Question Time Limit (seconds)</label>
@@ -212,126 +200,9 @@ const Settings = () => {
           <small>Default time limit for each question (can be overridden per question)</small>
         </div>
       )}
-    </div>
-  );
 
-  const renderQuestionSettings = () => (
-    <div>
-      <h3>Question Settings</h3>
       <div className="form-group">
-        <label>
-          <input
-            type="checkbox"
-            checked={settings.randomizeQuestions}
-            onChange={(e) => handleChange('randomizeQuestions', e.target.checked)}
-          />
-          Randomize Questions
-        </label>
-      </div>
-      {settings.randomizeQuestions && (
-        <div className="form-group">
-          <label>
-            <input
-              type="radio"
-              name="randomizeType"
-              checked={settings.randomizeAll}
-              onChange={() => handleChange('randomizeAll', true)}
-            />
-            Randomize All Questions
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="randomizeType"
-              checked={!settings.randomizeAll}
-              onChange={() => handleChange('randomizeAll', false)}
-            />
-            Include Specific Number of Questions
-          </label>
-        </div>
-      )}
-      
-      <div className="form-group">
-        <label>
-          <input
-            type="checkbox"
-            checked={settings.autoNumberQuestions}
-            onChange={(e) => handleChange('autoNumberQuestions', e.target.checked)}
-          />
-          Auto Number Questions
-        </label>
-        <small>A sequential number will be automatically added to the start of each question</small>
-      </div>
-      
-      <div className="form-group">
-        <label>
-          <input
-            type="checkbox"
-            checked={settings.questionBookmarks}
-            onChange={(e) => handleChange('questionBookmarks', e.target.checked)}
-          />
-          Question Bookmarks
-        </label>
-        <small>Respondents can bookmark questions during the test</small>
-      </div>
-      
-      <div className="form-group">
-        <label>Questions Per Page</label>
-        <input
-          type="number"
-          value={settings.questionsPerPage}
-          onChange={(e) => handleChange('questionsPerPage', parseInt(e.target.value))}
-          min="1"
-        />
-        <small>If selected this will override the page setup on the Create screen</small>
-      </div>
-    </div>
-  );
-
-  const renderAttempts = () => (
-    <div>
-      <h3>Quiz Attempts</h3>
-      <div className="form-group">
-        <label>Maximum Quiz Attempts</label>
-        <input
-          type="number"
-          value={settings.maxQuizAttempts}
-          onChange={(e) => handleChange('maxQuizAttempts', parseInt(e.target.value))}
-          min="1"
-        />
-        <small>If set to greater than 1 then respondents will be able take the quiz up to this value set</small>
-      </div>
-      
-      <div className="form-group">
-        <label>
-          <input
-            type="checkbox"
-            checked={settings.canOnlyRetakeIfFail}
-            onChange={(e) => handleChange('canOnlyRetakeIfFail', e.target.checked)}
-          />
-          Can Only Retake if Fail Quiz
-        </label>
-      </div>
-      
-      <div className="form-group">
-        <label>
-          <input
-            type="checkbox"
-            checked={settings.useBrowserAttemptsTracker}
-            onChange={(e) => handleChange('useBrowserAttemptsTracker', e.target.checked)}
-          />
-          Use Browser Attempts Tracker
-        </label>
-        <small>A respondent will only be able to complete your quiz the specified number of times from the same device/browser</small>
-      </div>
-    </div>
-  );
-
-  const renderSchedule = () => (
-    <div>
-      <h3>Schedule Settings</h3>
-      <div className="form-group">
-        <label>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.hasSchedule}
@@ -339,7 +210,9 @@ const Settings = () => {
           />
           Enable Schedule
         </label>
+        <small>Set start and end dates for the event</small>
       </div>
+
       {settings.hasSchedule && (
         <>
           <div className="form-group">
@@ -360,69 +233,75 @@ const Settings = () => {
           </div>
         </>
       )}
+
+      <div className="form-group">
+        <label>Maximum Quiz Attempts</label>
+        <input
+          type="number"
+          value={settings.maxQuizAttempts}
+          onChange={(e) => handleChange('maxQuizAttempts', parseInt(e.target.value))}
+          min="1"
+        />
+        <small>Number of times a user can attempt the quiz</small>
+      </div>
       
       <div className="form-group">
-        <label>
+        <label className="checkbox-label">
           <input
             type="checkbox"
-            checked={settings.userSchedule}
-            onChange={(e) => handleChange('userSchedule', e.target.checked)}
+            checked={settings.canOnlyRetakeIfFail}
+            onChange={(e) => handleChange('canOnlyRetakeIfFail', e.target.checked)}
           />
-          User Schedule
+          Can Only Retake if Fail Quiz
         </label>
+        <small>Users can only retry if they fail</small>
       </div>
-      {settings.userSchedule && (
-        <div className="form-group">
-          <label>User Schedule Days</label>
-          <input
-            type="number"
-            value={settings.userScheduleDays}
-            onChange={(e) => handleChange('userScheduleDays', parseInt(e.target.value))}
-            min="1"
-          />
-          <small>Set the number of days that each user can access the quiz</small>
-        </div>
-      )}
-    </div>
-  );
 
-  const renderLayout = () => (
-    <div>
-      <h3>Layout Settings</h3>
       <div className="form-group">
-        <label>Question Layout</label>
-        <select
-          value={settings.questionLayout}
-          onChange={(e) => handleChange('questionLayout', e.target.value)}
-        >
-          <option value="vertical">Vertical</option>
-          <option value="horizontal">Horizontal</option>
-        </select>
-        <small>Options can be positioned under the question text (Vertical) or to the right of the question text (Horizontal)</small>
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={settings.randomizeQuestions}
+            onChange={(e) => handleChange('randomizeQuestions', e.target.checked)}
+          />
+          Randomize Questions
+        </label>
+        <small>Shuffle question order for each attempt</small>
       </div>
-      
+
       <div className="form-group">
-        <label>Navigation Bar Position</label>
-        <select
-          value={settings.navigationBarPosition}
-          onChange={(e) => handleChange('navigationBarPosition', e.target.value)}
-        >
-          <option value="fixed">Fixed</option>
-          <option value="bottom">Bottom</option>
-          <option value="top">Top</option>
-        </select>
-        <small>The navigation buttons can be positioned to display at the end of the page (inline) or fixed to the bottom of the screen (Fixed)</small>
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={settings.autoNumberQuestions}
+            onChange={(e) => handleChange('autoNumberQuestions', e.target.checked)}
+          />
+          Auto Number Questions
+        </label>
+        <small>Automatically add sequential numbers to questions</small>
+      </div>
+
+      <div className="form-group">
+        <label>Questions Per Page</label>
+        <input
+          type="number"
+          value={settings.questionsPerPage}
+          onChange={(e) => handleChange('questionsPerPage', parseInt(e.target.value))}
+          min="1"
+        />
+        <small>Number of questions to display per page</small>
       </div>
     </div>
   );
 
   const renderSecurity = () => (
     <div>
-      <h3 style={{ color: '#4a5568', marginBottom: '20px' }}>🔒 Security Settings</h3>
+      <h3 className="settings-section-title">🔒 Security Settings</h3>
+      
       <div className="form-group">
         <label style={{ fontWeight: '600', marginBottom: '12px', display: 'block' }}>Browser Restrictions</label>
-        <div style={{ marginLeft: '20px', display: 'grid', gap: '8px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="checkbox-group">
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={settings.allowCut}
@@ -430,7 +309,7 @@ const Settings = () => {
             />
             Allow Cut (Ctrl+X)
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={settings.allowCopy}
@@ -438,7 +317,7 @@ const Settings = () => {
             />
             Allow Copy (Ctrl+C)
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={settings.allowPaste}
@@ -446,7 +325,7 @@ const Settings = () => {
             />
             Allow Paste (Ctrl+V)
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={settings.allowRightClick}
@@ -454,7 +333,7 @@ const Settings = () => {
             />
             Allow Right Click Context Menu
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={settings.allowPrint}
@@ -467,7 +346,7 @@ const Settings = () => {
       </div>
       
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.allowPreviousPageNavigation}
@@ -479,7 +358,7 @@ const Settings = () => {
       </div>
       
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.useBrowserAttemptsTracker}
@@ -489,14 +368,9 @@ const Settings = () => {
         </label>
         <small>Limit quiz attempts per browser/device</small>
       </div>
-    </div>
-  );
 
-  const renderConfirmation = () => (
-    <div>
-      <h3 style={{ color: '#4a5568', marginBottom: '20px' }}>✅ Confirmation Settings</h3>
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.confirmBeforeSubmit}
@@ -508,7 +382,7 @@ const Settings = () => {
       </div>
       
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={settings.confirmBeforeCloseBrowser}
@@ -522,132 +396,77 @@ const Settings = () => {
   );
 
   const tabs = [
-    { id: 'general', label: 'General', component: renderGeneral },
-    { id: 'display', label: 'Display', component: renderDisplay },
-    { id: 'time', label: 'Time Settings', component: renderTimeSettings },
-    { id: 'questions', label: 'Questions', component: renderQuestionSettings },
-    { id: 'attempts', label: 'Attempts', component: renderAttempts },
-    { id: 'schedule', label: 'Schedule', component: renderSchedule },
-    { id: 'layout', label: 'Layout', component: renderLayout },
-    { id: 'security', label: 'Security', component: renderSecurity },
-    { id: 'confirmation', label: 'Confirmation', component: renderConfirmation }
+    { id: 'general', label: 'General', icon: '🎯', component: renderGeneral },
+    { id: 'event', label: 'Event Settings', icon: '⏰', component: renderEvent },
+    { id: 'security', label: 'Security', icon: '🔒', component: renderSecurity }
   ];
 
   return (
-    <div className="container">
-      <div className="slide-in-left" style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{
-          fontSize: '2.5rem',
-          fontWeight: '800',
-          background: 'linear-gradient(135deg, #667eea, #764ba2)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          marginBottom: '12px'
-        }}>
-          ⚙️ Application Settings
-        </h1>
-        <p style={{ color: '#64748b', fontSize: '16px' }}>Configure your application preferences and behavior</p>
+    <div className="settings-container">
+      <div className="settings-header slide-in-left">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <h1 className="settings-title">⚙️ Application Settings</h1>
+          <StatusIndicator
+            icon="🕒"
+            label="Time Limit"
+            value={status.timeLimit.value}
+            status={status.timeLimit.status}
+            lastUpdated={status.timeLimit.lastUpdated}
+            onQuickAction={() => setActiveTab('event')}
+          />
+          <StatusIndicator
+            icon="🔐"
+            label="Anti-Cheat"
+            value={status.antiCheat.value}
+            status={status.antiCheat.status}
+            lastUpdated={status.antiCheat.lastUpdated}
+            onQuickAction={() => setActiveTab('security')}
+          />
+          <StatusIndicator
+            icon="🧠"
+            label="SEB Mode"
+            value={status.sebMode.value}
+            status={status.sebMode.status}
+            lastUpdated={status.sebMode.lastUpdated}
+          />
+        </div>
+        <p className="settings-subtitle">Configure your application preferences and behavior</p>
       </div>
       
-      {message && (
-        <div className={`${message.includes('success') ? 'success' : 'error-message'} scale-in`}>
-          {message}
-        </div>
-      )}
-      
-      <div style={{ display: 'flex', gap: '24px' }}>
-        {/* Sidebar */}
-        <div className="slide-in-left" style={{ width: '280px' }}>
-          <div className="card" style={{ position: 'sticky', top: '100px' }}>
-            <h3 style={{ 
-              marginBottom: '24px', 
-              color: '#374151',
-              fontSize: '18px',
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              📋 Settings Menu
-            </h3>
+      <div className="settings-layout">
+        <div className="settings-sidebar slide-in-left">
+          <div className="settings-menu">
+            <h3 className="settings-menu-title">📋 Settings Menu</h3>
             {tabs.map((tab, index) => (
               <div
                 key={tab.id}
-                className="fade-in"
-                style={{
-                  animationDelay: `${index * 0.05}s`,
-                  padding: '14px 18px',
-                  cursor: 'pointer',
-                  background: activeTab === tab.id 
-                    ? 'linear-gradient(135deg, #667eea, #764ba2)' 
-                    : 'transparent',
-                  color: activeTab === tab.id ? 'white' : '#4b5563',
-                  borderRadius: '12px',
-                  marginBottom: '6px',
-                  fontWeight: activeTab === tab.id ? '600' : '500',
-                  fontSize: '14px',
-                  transition: 'all 0.2s ease',
-                  border: activeTab === tab.id ? 'none' : '1px solid transparent'
-                }}
+                className={`settings-tab ${activeTab === tab.id ? 'active' : ''} fade-in`}
+                style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => setActiveTab(tab.id)}
-                onMouseEnter={(e) => {
-                  if (activeTab !== tab.id) {
-                    e.target.style.background = '#f8fafc';
-                    e.target.style.borderColor = '#e2e8f0';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== tab.id) {
-                    e.target.style.background = 'transparent';
-                    e.target.style.borderColor = 'transparent';
-                  }
-                }}
               >
-                {tab.label}
+                {tab.icon} {tab.label}
               </div>
             ))}
           </div>
         </div>
         
-        {/* Main Content */}
-        <div className="slide-in-right" style={{ flex: 1 }}>
-          <div className="card">
+        <div className="settings-content slide-in-right">
+          <div className="settings-panel">
             <div style={{ minHeight: '400px' }}>
               {tabs.find(tab => tab.id === activeTab)?.component()}
             </div>
             
-            <div style={{ 
-              marginTop: '40px', 
-              paddingTop: '24px', 
-              borderTop: '2px solid #f1f5f9',
-              display: 'flex',
-              gap: '16px',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <div className="settings-actions">
               <button 
                 onClick={saveSettings} 
-                className="btn btn-primary"
+                className="btn-save"
                 disabled={loading}
-                style={{ 
-                  minWidth: '160px',
-                  background: loading 
-                    ? '#9ca3af' 
-                    : 'linear-gradient(135deg, #667eea, #764ba2)'
-                }}
               >
                 {loading ? '💾 Saving...' : '💾 Save Settings'}
               </button>
               <button 
-                onClick={() => window.location.reload()} 
-                className="btn"
-                style={{ 
-                  background: '#f3f4f6', 
-                  color: '#4b5563',
-                  minWidth: '120px',
-                  border: '1px solid #e5e7eb'
-                }}
+                onClick={resetSettings} 
+                className="btn-reset"
               >
                 🔄 Reset
               </button>

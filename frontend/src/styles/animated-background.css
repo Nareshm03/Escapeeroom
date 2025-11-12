@@ -1,0 +1,51 @@
+/* Animated Background Gradient */
+
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.3;
+  background: linear-gradient(3deg, #0b1020, #141933, #0b1020);
+  background-size: 400% 400%;
+  animation: gradientShift 40s ease-in-out infinite;
+  will-change: background-position;
+  pointer-events: none;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Fallback for browsers without animation support */
+@supports not (animation: gradientShift 40s ease-in-out infinite) {
+  .animated-background {
+    background: linear-gradient(3deg, #0b1020, #141933, #0b1020);
+    background-size: 100% 100%;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animated-background {
+    animation: none;
+    background-position: 0% 50%;
+  }
+}
+
+/* Performance optimization for mobile */
+@media (max-width: 767px) {
+  .animated-background {
+    animation-duration: 60s;
+  }
+}

@@ -1,0 +1,239 @@
+/* 404 Not Found - Lost in the Maze Theme */
+
+.not-found-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(45deg, #0B0F1A, #141C2E);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.not-found-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+  animation: pulse 8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.not-found-content {
+  text-align: center;
+  max-width: 600px;
+  position: relative;
+  z-index: 1;
+}
+
+.maze-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  display: inline-block;
+  filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.6));
+}
+
+.not-found-title {
+  font-size: 120px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+  text-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.6)); }
+  50% { filter: drop-shadow(0 0 40px rgba(102, 126, 234, 0.9)); }
+}
+
+.not-found-subtitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #f9fafb;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.not-found-message {
+  font-size: 16px;
+  color: #d1d5db;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+/* Maze Visualization */
+.maze-visualization {
+  width: 100%;
+  max-width: 300px;
+  height: 300px;
+  margin: 40px auto;
+}
+
+.maze-cell {
+  fill: none;
+  stroke: rgba(102, 126, 234, 0.3);
+  stroke-width: 2;
+  transition: all 0.3s;
+}
+
+.maze-cell:hover {
+  stroke: rgba(102, 126, 234, 0.8);
+  fill: rgba(102, 126, 234, 0.1);
+}
+
+.maze-path {
+  fill: none;
+  stroke: #667eea;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.8));
+  animation: pathGlow 2s ease-in-out infinite;
+}
+
+@keyframes pathGlow {
+  0%, 100% { 
+    stroke: #667eea;
+    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.8));
+  }
+  50% { 
+    stroke: #f093fb;
+    filter: drop-shadow(0 0 20px rgba(240, 147, 251, 0.9));
+  }
+}
+
+/* Action Buttons */
+.not-found-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-home,
+.btn-teams {
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-home {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-home:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+}
+
+.btn-teams {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 2px solid rgba(102, 126, 234, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.btn-teams:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.8);
+  transform: translateY(-2px);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .not-found-container::before,
+  .maze-icon,
+  .not-found-title,
+  .maze-path {
+    animation: none;
+  }
+  
+  .btn-home:hover,
+  .btn-teams:hover {
+    transform: none;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .not-found-title {
+    font-size: 80px;
+  }
+  
+  .not-found-subtitle {
+    font-size: 24px;
+  }
+  
+  .maze-icon {
+    font-size: 60px;
+  }
+  
+  .maze-visualization {
+    max-width: 250px;
+    height: 250px;
+  }
+  
+  .not-found-actions {
+    flex-direction: column;
+  }
+  
+  .btn-home,
+  .btn-teams {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .not-found-title {
+    font-size: 60px;
+  }
+  
+  .not-found-subtitle {
+    font-size: 20px;
+  }
+  
+  .maze-visualization {
+    max-width: 200px;
+    height: 200px;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .not-found-title {
+    -webkit-text-fill-color: #667eea;
+  }
+  
+  .maze-cell {
+    stroke: #667eea;
+  }
+  
+  .btn-home,
+  .btn-teams {
+    border: 2px solid white;
+  }
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] .not-found-container {
+  background: linear-gradient(45deg, #000000, #0B0F1A);
+}

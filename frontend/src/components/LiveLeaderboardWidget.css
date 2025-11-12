@@ -1,0 +1,239 @@
+.live-leaderboard-widget {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-primary);
+  transition: var(--theme-transition);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-secondary);
+}
+
+.widget-header h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  background: #48bb78;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  font-size: 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.widget-loading,
+.widget-error {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+
+.widget-error {
+  color: #f56565;
+}
+
+.widget-empty {
+  text-align: center;
+  padding: 24px;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.retry-link {
+  display: block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.retry-link:hover {
+  background: #dc2626;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.leaderboard-table thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-align: left;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leaderboard-table tbody tr {
+  transition: background 150ms ease;
+}
+
+.leaderboard-table tbody tr:nth-child(even) {
+  background: var(--hover-overlay);
+}
+
+.leaderboard-table tbody tr:hover {
+  background: var(--active-overlay);
+}
+
+.leaderboard-table tbody td {
+  padding: 10px 4px;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.rank-cell {
+  font-weight: 700;
+  color: var(--primary);
+  width: 40px;
+}
+
+.team-cell {
+  font-weight: 500;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-cell {
+  text-align: center;
+  width: 50px;
+}
+
+.time-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  width: 60px;
+}
+
+.view-full-link {
+  display: block;
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 8px 0;
+  transition: color 150ms ease;
+}
+
+.view-full-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.view-full-link:focus-visible {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Tablet: Below content */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .live-leaderboard-widget {
+    width: 100%;
+    margin-top: 24px;
+  }
+}
+
+/* Desktop Large: Sticky sidebar */
+@media (min-width: 1280px) {
+  .live-leaderboard-widget {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+}
+
+/* Mobile: Compact layout */
+@media (max-width: 767px) {
+  .live-leaderboard-widget {
+    width: 100%;
+    margin-top: 16px;
+    padding: 16px;
+  }
+
+  .widget-header h3 {
+    font-size: 1rem;
+  }
+
+  .leaderboard-table thead th {
+    font-size: 0.6875rem;
+    padding: 6px 2px;
+  }
+
+  .leaderboard-table tbody td {
+    font-size: 0.8125rem;
+    padding: 8px 2px;
+  }
+
+  .team-cell {
+    max-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .live-leaderboard-widget {
+    padding: 12px;
+  }
+
+  .widget-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .widget-header h3 {
+    font-size: 0.9375rem;
+  }
+
+  .leaderboard-table thead th {
+    font-size: 0.625rem;
+    padding: 4px 2px;
+  }
+
+  .leaderboard-table tbody td {
+    font-size: 0.75rem;
+    padding: 6px 2px;
+  }
+
+  .team-cell {
+    max-width: 80px;
+  }
+
+  .view-full-link {
+    font-size: 0.8125rem;
+  }
+}

@@ -1,0 +1,42 @@
+/* Cinematic Background Animation */
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.cinematic-background {
+  background: linear-gradient(45deg, #0B0F1A, #141C2E, #1a2332, #0B0F1A);
+  background-size: 400% 400%;
+  animation: gradientShift 60s ease-in-out infinite;
+  min-height: 100vh;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-background {
+    animation: none;
+    background: linear-gradient(45deg, #0B0F1A, #141C2E);
+    background-size: 100% 100%;
+  }
+}
+
+/* Performance optimization */
+.cinematic-background {
+  will-change: background-position;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

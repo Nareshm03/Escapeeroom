@@ -1,0 +1,73 @@
+.event-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.event-status-active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.event-status-paused {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.event-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.event-status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.event-status-text {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.event-duration {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.event-toggle-btn {
+  padding: 8px 20px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid white;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.event-toggle-btn:hover {
+  background: white;
+  color: #1f2937;
+}
+
+@media (max-width: 768px) {
+  .event-status-banner {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}

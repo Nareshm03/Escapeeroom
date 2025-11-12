@@ -1,0 +1,267 @@
+.teams-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  padding-top: 80px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 24px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin: 0 0 24px 0;
+}
+
+.teams-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.teams-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.teams-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.search-input,
+.teams-filters input,
+.teams-filters select {
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.btn-clear {
+  padding: 10px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-clear:hover {
+  background: var(--hover-overlay);
+}
+
+.loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-tertiary);
+}
+
+.teams-table-container {
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.teams-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.teams-table thead th {
+  padding: 16px;
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.teams-table thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.teams-table thead th.sortable:hover {
+  color: var(--primary);
+}
+
+.teams-table tbody td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-secondary);
+  color: var(--text-primary);
+}
+
+.teams-table tbody tr:hover {
+  background: var(--hover-overlay);
+}
+
+.team-name {
+  font-weight: 600;
+}
+
+.members-cell {
+  text-align: center;
+}
+
+.member-count {
+  cursor: help;
+}
+
+.copy-code {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.copy-code:hover {
+  background: var(--hover-overlay);
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+  background: var(--hover-overlay);
+}
+
+.btn-action.danger:hover {
+  background: rgba(245, 101, 101, 0.1);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 24px 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+  .teams-table {
+    font-size: 0.875rem;
+  }
+
+  .teams-table thead th,
+  .teams-table tbody td {
+    padding: 12px 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .teams-page {
+    padding: 16px;
+    padding-top: 80px;
+  }
+
+  .teams-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .teams-filters {
+    flex-direction: column;
+  }
+
+  .search-input,
+  .teams-filters input,
+  .teams-filters select {
+    width: 100%;
+  }
+
+  .teams-table-container {
+    overflow-x: auto;
+  }
+
+  .teams-table {
+    min-width: 800px;
+  }
+
+  .modal {
+    width: 95%;
+    padding: 24px;
+    top: 50%;
+  }
+}

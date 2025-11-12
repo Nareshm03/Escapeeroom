@@ -1,0 +1,91 @@
+.mini-leaderboard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.mini-leaderboard-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #1f2937;
+}
+
+.mini-leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mini-leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.mini-leaderboard-item:hover {
+  background: #f3f4f6;
+  transform: translateX(4px);
+}
+
+.mini-leaderboard-rank {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.mini-leaderboard-info {
+  flex: 1;
+}
+
+.mini-leaderboard-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1f2937;
+  margin-bottom: 2px;
+}
+
+.mini-leaderboard-score {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mini-leaderboard-change {
+  font-size: 18px;
+  font-weight: 700;
+  color: #10b981;
+}
+
+[data-theme="dark"] .mini-leaderboard {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .mini-leaderboard-title {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .mini-leaderboard-item {
+  background: #374151;
+}
+
+[data-theme="dark"] .mini-leaderboard-item:hover {
+  background: #4b5563;
+}
+
+[data-theme="dark"] .mini-leaderboard-name {
+  color: #f9fafb;
+}

@@ -1,15 +1,22 @@
 const express = require('express');
-const db = require('../utils/db');
+const { User } = require('../models');
 
 const router = express.Router();
 
 // Get all users
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT id, email, name FROM users ORDER BY created_at DESC');
-    res.json(result.rows);
+    const users = await User.find({}, 'id email name createdAt')
+      .sort({ createdAt: -1 });
+    
+    res.json(users.map(user => ({
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.createdAt
+    })));
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get users' });
+    res.status(500).json({ error: 'Failed to get users: ' + error.message });
   }
 });
 

@@ -1,0 +1,85 @@
+.notification-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+.notification-banner.error {
+  background: #fef2f2;
+  border-bottom: 2px solid var(--danger);
+  color: #991b1b;
+}
+
+.notification-banner.success {
+  background: #f0fdf4;
+  border-bottom: 2px solid var(--success);
+  color: #166534;
+}
+
+.notification-banner.warning {
+  background: #fffbeb;
+  border-bottom: 2px solid var(--warning);
+  color: #92400e;
+}
+
+.notification-banner.info {
+  background: #eff6ff;
+  border-bottom: 2px solid var(--info);
+  color: #1e40af;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.banner-icon {
+  font-size: 1.25rem;
+}
+
+.banner-message {
+  font-weight: 500;
+}
+
+.banner-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.banner-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.banner-btn.retry {
+  background: currentColor;
+  color: white;
+  opacity: 0.9;
+}
+
+.banner-btn.retry:hover {
+  opacity: 1;
+}
+
+.banner-btn.dismiss {
+  background: transparent;
+  color: currentColor;
+}
+
+.banner-btn.dismiss:hover {
+  background: rgba(0, 0, 0, 0.1);
+}

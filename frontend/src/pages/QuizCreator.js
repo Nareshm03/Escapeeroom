@@ -6,6 +6,7 @@ const QuizCreator = () => {
     title: '',
     description: '',
     totalTimeMinutes: 30,
+    sequential_unlock_enabled: true,
     questions: [{ question: '', answer: '', timeLimit: 120 }]
   });
   const [createdQuiz, setCreatedQuiz] = useState(null);
@@ -30,6 +31,7 @@ const QuizCreator = () => {
         title: quiz.title,
         description: quiz.description,
         totalTimeMinutes: quiz.totalTimeMinutes || 30,
+        sequential_unlock_enabled: quiz.sequential_unlock_enabled,
         questions: quiz.questions.map(q => ({
           question: q.question,
           answer: q.answer,
@@ -46,10 +48,23 @@ const QuizCreator = () => {
 
   const publishQuiz = async () => {
     try {
-      await api.post(`/api/quiz/${createdQuiz.quiz.id}/publish`);
-      alert('Quiz published!');
+      console.log('Publishing quiz with ID:', createdQuiz.quiz.id);
+      const response = await api.post(`/api/quiz/${createdQuiz.quiz.id}/publish`);
+      console.log('Publish response:', response.data);
+
+      // Update the createdQuiz state to reflect published status
+      setCreatedQuiz({
+        ...createdQuiz,
+        quiz: {
+          ...createdQuiz.quiz,
+          isPublished: true
+        }
+      });
+
+      alert('Quiz published successfully!');
     } catch (error) {
-      alert('Failed to publish quiz');
+      console.error('Failed to publish quiz:', error.response?.data || error.message);
+      alert('Failed to publish quiz: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -76,11 +91,36 @@ const QuizCreator = () => {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button onClick={publishQuiz} className="btn btn-primary">
-              🚀 Publish Quiz
+            <button
+              onClick={publishQuiz}
+              className="btn btn-primary"
+              disabled={createdQuiz.quiz.isPublished}
+            >
+              {createdQuiz.quiz.isPublished ? '✅ Published' : '🚀 Publish Quiz'}
             </button>
-            <button 
-              onClick={() => setCreatedQuiz(null)} 
+            <button
+              onClick={() => {
+                const link = `${window.location.origin}${createdQuiz.link}`;
+                navigator.clipboard.writeText(link).then(() => {
+                  alert('Link copied to clipboard!');
+                }).catch(() => {
+                  // Fallback for older browsers
+                  const textArea = document.createElement('textarea');
+                  textArea.value = link;
+                  document.body.appendChild(textArea);
+                  textArea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textArea);
+                  alert('Link copied to clipboard!');
+                });
+              }}
+              className="btn"
+              style={{ background: '#10b981', color: 'white' }}
+            >
+              📋 Copy Link
+            </button>
+            <button
+              onClick={() => setCreatedQuiz(null)}
               className="btn"
               style={{ background: '#f3f4f6', color: '#374151' }}
             >
@@ -150,6 +190,38 @@ const QuizCreator = () => {
               style={{ fontSize: '16px' }}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: '600' }}>
+              🔒 Enable Sequential Unlock Mode
+              <span style={{ fontSize: '14px', color: '#666', fontWeight: 'normal' }} title="When enabled, questions unlock one at a time after answering the previous question correctly">
+                ℹ️
+              </span>
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="sequentialUnlock"
+                  checked={quiz.sequential_unlock_enabled === true}
+                  onChange={() => setQuiz({ ...quiz, sequential_unlock_enabled: true })}
+                />
+                ✅ Yes
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="sequentialUnlock"
+                  checked={quiz.sequential_unlock_enabled === false}
+                  onChange={() => setQuiz({ ...quiz, sequential_unlock_enabled: false })}
+                />
+                No
+              </label>
+            </div>
+            <small style={{ display: 'block', marginTop: '8px', color: '#666' }}>
+              Sequential mode requires answering each question correctly before unlocking the next
+            </small>
           </div>
 
           <div style={{ marginTop: '40px' }}>

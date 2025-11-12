@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../utils/db');
+const { User, Team } = require('../models');
 
 const router = express.Router();
 
@@ -8,28 +8,37 @@ router.post('/register', async (req, res) => {
   const { email, password, name, teamName } = req.body;
 
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
     // Create user
-    const userResult = await db.query(
-      'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name',
-      [email, password, name]
-    );
-    const user = userResult.rows[0];
+    const user = new User({
+      email,
+      password,
+      name
+    });
+    await user.save();
 
     // Create team
-    const teamResult = await db.query(
-      'INSERT INTO teams (name, created_by) VALUES ($1, $2) RETURNING *',
-      [teamName, user.id]
-    );
-    const team = teamResult.rows[0];
+    const team = new Team({
+      name: teamName,
+      createdBy: user._id,
+      members: [{
+        user: user._id,
+        role: 'admin'
+      }]
+    });
+    await team.save();
     
-    // Add user to team
-    await db.query(
-      'INSERT INTO team_members (team_id, user_id, role) VALUES ($1, $2, $3)',
-      [team.id, user.id, 'admin']
-    );
-
-    res.status(201).json({ user, team });
+    res.status(201).json({ 
+      user: { id: user._id, email: user.email, name: user.name },
+      team: { id: team._id, name: team.name }
+    });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
   }
 });
@@ -40,15 +49,31 @@ router.post('/login', async (req, res) => {
 
   try {
     console.log('Login attempt:', { email, password: password ? '[HIDDEN]' : 'undefined' });
-    const result = await db.query('SELECT * FROM users WHERE email = $1 AND password = $2', [email, password]);
-    console.log('Query result:', result.rows.length, 'users found');
     
-    if (result.rows.length === 0) {
+    // Find user by email
+    const user = await User.findOne({ email });
+    console.log('User found:', user ? 'Yes' : 'No');
+    
+    if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    const user = result.rows[0];
-    res.json({ user: { id: user.id, email: user.email, name: user.name } });
+    // Check password
+    const isMatch = await user.comparePassword(password);
+    console.log('Password match:', isMatch);
+    
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    res.json({ 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        name: user.name,
+        role: user.role 
+      } 
+    });
   } catch (error) {
     console.error('Login error:', error.message);
     res.status(500).json({ error: 'Login failed: ' + error.message });

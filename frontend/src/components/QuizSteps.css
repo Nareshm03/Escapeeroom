@@ -1,0 +1,273 @@
+.quiz-step {
+  min-height: 400px;
+}
+
+.step-heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.step-description {
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.required {
+  color: var(--danger);
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  text-align: right;
+  margin-top: 4px;
+}
+
+.error-message {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.error-message::before {
+  content: '⚠️';
+  font-size: 14px;
+}
+
+.form-group input.error,
+.form-group textarea.error,
+.form-group select.error {
+  border-color: #e53e3e !important;
+  border-width: 2px;
+  background: rgba(245, 101, 101, 0.05);
+  animation: shake 0.3s ease-in-out;
+}
+
+.form-group input.error:focus,
+.form-group textarea.error:focus,
+.form-group select.error:focus {
+  box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.2);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Questions Step */
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.question-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.question-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.question-header:hover {
+  background: var(--hover-overlay);
+}
+
+.question-number {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.question-preview {
+  flex: 1;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expand-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.question-body {
+  padding: 0 16px 16px;
+  overflow: hidden;
+}
+
+.btn-delete {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  color: var(--danger);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+  background: rgba(245, 101, 101, 0.1);
+}
+
+/* Review Step */
+.review-section {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.review-header h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.btn-edit {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit:hover {
+  background: var(--hover-overlay);
+  color: var(--text-primary);
+}
+
+.review-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-item {
+  display: flex;
+  gap: 12px;
+}
+
+.review-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 100px;
+}
+
+.review-value {
+  color: var(--text-primary);
+}
+
+.review-question {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
+}
+
+.question-details {
+  flex: 1;
+}
+
+.question-text {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.question-meta {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+}
+
+.publish-notice {
+  padding: 16px;
+  background: rgba(72, 187, 120, 0.1);
+  border-left: 4px solid #48bb78;
+  border-radius: 8px;
+  color: var(--text-primary);
+}
+
+.validation-errors {
+  padding: 20px;
+  background: rgba(245, 101, 101, 0.1);
+  border-left: 4px solid #e53e3e;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.validation-errors h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e53e3e;
+  margin: 0 0 12px 0;
+}
+
+.validation-errors ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.validation-errors li {
+  display: flex;
+  align-items: center;
+}
+
+.error-link {
+  background: transparent;
+  border: none;
+  color: #e53e3e;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-align: left;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: underline;
+}
+
+.error-link:hover {
+  background: rgba(245, 101, 101, 0.1);
+  color: #c53030;
+}
+
+.error-link:focus-visible {
+  outline: 2px solid #e53e3e;
+  outline-offset: 2px;
+}

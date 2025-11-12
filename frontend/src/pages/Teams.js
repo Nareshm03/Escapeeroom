@@ -1,312 +1,253 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useToast } from '../utils/ToastContext';
+import TeamModal from '../components/TeamModal';
+import EmptyTeamsState from '../components/EmptyTeamsState';
+import '../styles/design-tokens.css';
+import '../styles/TeamsRedesign.css';
 
 const Teams = () => {
   const [teams, setTeams] = useState([]);
+  const [filteredTeams, setFilteredTeams] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [modalOpen, setModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const toast = useToast();
 
   useEffect(() => {
-    setError(''); // Clear any existing errors
     fetchTeams();
   }, []);
+
+  useEffect(() => {
+    filterTeams();
+  }, [teams, searchQuery, statusFilter]);
+
+  const filterTeams = useCallback(() => {
+    let filtered = [...teams];
+
+    if (searchQuery) {
+      filtered = filtered.filter(team =>
+        team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        team.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(team => team.status === statusFilter);
+    }
+
+    setFilteredTeams(filtered);
+  }, [teams, searchQuery, statusFilter]);
 
   const fetchTeams = async () => {
     try {
       setLoading(true);
-      setError('');
       const response = await api.get('/api/teams');
-      console.log('Teams response:', response.data);
       setTeams(response.data || []);
-      // Success - clear error and set teams
-      setError('');
-      console.log('Teams loaded successfully:', response.data.length, 'teams');
     } catch (error) {
       console.error('Error fetching teams:', error);
-      setError('Failed to load teams. Please try again.');
-      setTeams([]); // Clear teams on error
+      toast.error('Failed to load teams. Please try again.');
+      setTeams([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateTeam = async (e) => {
-    e.preventDefault();
+  const handleCreateTeam = async (formData) => {
     try {
       await api.post('/api/teams', formData);
-      setFormData({ name: '', description: '' });
-      setShowCreateForm(false);
       fetchTeams();
+      toast.success('Team created successfully!');
     } catch (error) {
-      setError('Failed to create team');
+      toast.error('Failed to create team. Please try again.');
     }
   };
 
-  const handleUpdateTeam = async (e) => {
-    e.preventDefault();
+  const handleUpdateTeam = async (formData) => {
     try {
       await api.put(`/api/teams/${editingTeam.id}`, formData);
       setEditingTeam(null);
-      setFormData({ name: '', description: '' });
       fetchTeams();
+      toast.success('Team updated successfully!');
     } catch (error) {
-      setError('Failed to update team');
+      toast.error('Failed to update team. Please try again.');
     }
   };
 
-  const handleDeleteTeam = async (teamId) => {
-    if (window.confirm('Are you sure you want to delete this team?')) {
+  const handleDeleteTeam = async (teamId, teamName) => {
+    if (window.confirm(`Are you sure you want to delete ${teamName}?`)) {
       try {
         await api.delete(`/api/teams/${teamId}`);
         fetchTeams();
+        toast.success('Team deleted successfully!');
       } catch (error) {
-        setError('Failed to delete team');
+        toast.error('Failed to delete team. Please try again.');
       }
     }
   };
 
-  const startEdit = (team) => {
-    setEditingTeam(team);
-    setFormData({ name: team.name, description: team.description || '' });
+  const copyAccessCode = (code) => {
+    navigator.clipboard.writeText(code);
+    toast.success('Access code copied to clipboard!');
   };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const openCreateModal = () => {
+    setEditingTeam(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (team) => {
+    setEditingTeam(team);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingTeam(null);
+  };
+
+  const handleModalSubmit = (formData) => {
+    if (editingTeam) {
+      handleUpdateTeam(formData);
+    } else {
+      handleCreateTeam(formData);
+    }
+  };
+
+
 
   if (loading) {
     return (
-      <div className="container">
+      <div className="teams-container">
         <LoadingSpinner size="large" text="Loading teams..." />
       </div>
     );
   }
 
   return (
-    <div className="container">
-      <h1 className="welcome-title" style={{ fontSize: '2.5rem', marginBottom: '40px' }}>
-        👥 Teams Dashboard
-      </h1>
-      
-      {error && (
-        <div className="error-message" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>⚠️ {error}</span>
-          <button 
-            onClick={() => setError('')}
-            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '18px' }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-      
-      <div className="card fade-in">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <h2 style={{ 
-            fontSize: '1.8rem',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            🏆 All Teams ({teams.length})
-          </h2>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button 
-              onClick={() => setShowCreateForm(true)}
-              className="btn btn-primary"
-              style={{ padding: '8px 16px', fontSize: '14px' }}
-            >
-              ➕ Add Team
-            </button>
-            <button 
-              onClick={() => {
-                setError('');
-                fetchTeams();
-              }}
-              className="btn btn-primary"
-              style={{ padding: '8px 16px', fontSize: '14px' }}
-            >
-              🔄 Refresh
-            </button>
-          </div>
-        </div>
-        
-        {/* Create/Edit Form */}
-        {(showCreateForm || editingTeam) && (
-          <div className="card" style={{ marginBottom: '30px', background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)' }}>
-            <h3>{editingTeam ? '✏️ Edit Team' : '➕ Create New Team'}</h3>
-            <form onSubmit={editingTeam ? handleUpdateTeam : handleCreateTeam}>
-              <div className="form-group">
-                <label>Team Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required
-                  placeholder="Enter team name"
-                />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <input
-                  type="text"
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  placeholder="Enter team description"
-                />
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button type="submit" className="btn btn-primary">
-                  {editingTeam ? '💾 Update' : '✅ Create'}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setShowCreateForm(false);
-                    setEditingTeam(null);
-                    setFormData({ name: '', description: '' });
-                  }}
-                  className="btn"
-                  style={{ background: '#e2e8f0', color: '#4a5568' }}
-                >
-                  ❌ Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-        
-        {teams.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '60px 20px',
-            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
-            borderRadius: '12px',
-            border: '2px dashed rgba(102, 126, 234, 0.2)'
-          }}>
-            <div style={{ fontSize: '4rem', marginBottom: '20px' }}>👥</div>
-            <h3 style={{ color: '#4a5568', marginBottom: '12px' }}>No Teams Found</h3>
-            <p style={{ color: '#718096' }}>Teams will appear here once they are created.</p>
-          </div>
-        ) : (
-          <div className="team-list">
-            {teams.map((team, index) => (
-              <div 
-                key={team.id} 
-                className="card hover-lift fade-in" 
-                style={{ 
-                  animationDelay: `${index * 0.1}s`,
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%)',
-                  border: '1px solid rgba(102, 126, 234, 0.1)'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                  <h3 style={{ 
-                    color: '#4a5568', 
-                    fontSize: '1.4rem',
-                    fontWeight: '700',
-                    margin: '0'
-                  }}>
-                    🛡️ {team.name}
-                  </h3>
-                  <span style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    padding: '4px 12px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: '600'
-                  }}>
-                    #{team.id}
-                  </span>
-                </div>
-                
-                {team.description && (
-                  <p style={{ color: '#718096', marginBottom: '16px', fontStyle: 'italic' }}>
-                    "{team.description}"
-                  </p>
-                )}
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '20px' }}>
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                    gap: '16px',
-                    flex: 1
-                  }}>
-                    <div style={{ 
-                      background: 'rgba(102, 126, 234, 0.1)', 
-                      padding: '12px', 
-                      borderRadius: '8px' 
-                    }}>
-                      <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#667eea' }}>
-                        👤 {team.created_by_name || 'Unknown'}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#718096', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        Team Leader
-                      </div>
-                    </div>
-                    
-                    <div style={{ 
-                      background: 'rgba(67, 233, 123, 0.1)', 
-                      padding: '12px', 
-                      borderRadius: '8px' 
-                    }}>
-                      <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#43e97b' }}>
-                        👥 {team.member_count || 0}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#718096', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        Members
-                      </div>
-                    </div>
-                    
-                    <div style={{ 
-                      background: 'rgba(245, 101, 101, 0.1)', 
-                      padding: '12px', 
-                      borderRadius: '8px' 
-                    }}>
-                      <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#f56565' }}>
-                        📅 {new Date(team.created_at).toLocaleDateString()}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#718096', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        Created
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
-                    <button 
-                      onClick={() => startEdit(team)}
-                      className="btn"
-                      style={{ 
-                        background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)',
-                        color: 'white',
-                        padding: '8px 12px',
-                        fontSize: '12px'
-                      }}
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteTeam(team.id)}
-                      className="btn"
-                      style={{ 
-                        background: 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)',
-                        color: 'white',
-                        padding: '8px 12px',
-                        fontSize: '12px'
-                      }}
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="teams-container">
+      <div className="teams-header">
+        <h1 id="teams-heading">👥 Teams Dashboard</h1>
+        <button onClick={openCreateModal} className="btn-primary">
+          ➕ Create Team
+        </button>
       </div>
+
+      {teams.length === 0 ? (
+        <EmptyTeamsState onCreateTeam={openCreateModal} />
+      ) : (
+        <>
+          <div className="teams-toolbar">
+            <div className="search-field">
+              <input
+                type="search"
+                placeholder="Search teams..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                aria-label="Search teams"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="status-filter"
+              aria-label="Filter by status"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="idle">Idle</option>
+            </select>
+          </div>
+
+          <motion.div
+            className="teams-grid"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15 }}
+          >
+            {filteredTeams.map((team, index) => (
+              <motion.div
+                key={team.id}
+                className="team-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.15 }}
+              >
+                <div className="team-card-header">
+                  <h3 className="team-name">🛡️ {team.name}</h3>
+                  <div className="team-members">
+                    {[...Array(Math.min(3, team.member_count || 1))].map((_, i) => (
+                      <div key={i} className="member-avatar">
+                        {String.fromCharCode(65 + i)}
+                      </div>
+                    ))}
+                    {team.member_count > 3 && (
+                      <div className="member-count">+{team.member_count - 3}</div>
+                    )}
+                  </div>
+                </div>
+                {team.description && (
+                  <p className="team-description">"{team.description}"</p>
+                )}
+                <div className="team-card-footer">
+                  <div className="access-code-container">
+                    <span className="access-code-label">Access Code:</span>
+                    <code className="access-code">{team.accessCode || 'ABC123'}</code>
+                    <button
+                      onClick={() => copyAccessCode(team.accessCode || 'ABC123')}
+                      className="copy-btn"
+                      aria-label="Copy access code"
+                      title="Copy to clipboard"
+                    >
+                      📋
+                    </button>
+                  </div>
+                  <div className="team-date" title={new Date(team.created_at).toLocaleString()}>
+                    {formatDate(team.created_at)}
+                  </div>
+                </div>
+
+                <div className="team-card-actions">
+                  <button
+                    onClick={() => openEditModal(team)}
+                    className="btn-secondary"
+                    aria-label={`Edit ${team.name}`}
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTeam(team.id, team.name)}
+                    className="btn-danger"
+                    aria-label={`Delete ${team.name}`}
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </>
+      )}
+
+      <TeamModal
+        isOpen={modalOpen}
+        onClose={closeModal}
+        onSubmit={handleModalSubmit}
+        initialData={editingTeam}
+      />
     </div>
   );
 };

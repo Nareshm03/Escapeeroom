@@ -16,6 +16,7 @@ const QuizTaker = () => {
   const [teamNameSet, setTeamNameSet] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [totalTimeLeft, setTotalTimeLeft] = useState(0);
+  const [unlockedQuestions, setUnlockedQuestions] = useState([0]);
 
   useEffect(() => {
     fetchQuiz();
@@ -56,11 +57,21 @@ const QuizTaker = () => {
   const fetchQuiz = async () => {
     try {
       const response = await api.get(`/quiz/${link}`);
-      setQuiz(response.data);
-      setAnswers(new Array(response.data.questions.length).fill(''));
+      const data = response.data?.quiz;
+      if (!data) {
+        throw new Error('Missing quiz data in response');
+      }
+      setQuiz(data);
+      setAnswers(new Array(data.questions.length).fill(''));
       // Use settings time limit if enabled, otherwise use quiz default
-      const timeLimit = settings.hasTimeLimit ? settings.timeLimit * 60 : response.data.quiz.total_time_minutes * 60;
+      const timeLimit = settings.hasTimeLimit ? settings.timeLimit * 60 : data.totalTimeMinutes * 60;
       setTotalTimeLeft(timeLimit);
+      // Initialize unlocked questions based on sequential mode
+      if (data.sequential_unlock_enabled) {
+        setUnlockedQuestions([0]);
+      } else {
+        setUnlockedQuestions(data.questions.map((_, i) => i));
+      }
     } catch (error) {
       alert('Quiz not found');
     }
@@ -85,19 +96,29 @@ const QuizTaker = () => {
     try {
       const checkResponse = await api.post(`/quiz/${link}/check`, {
         questionIndex: currentQuestion,
-        answer: currentAnswer
+        answer: currentAnswer,
+        unlockedQuestions: unlockedQuestions
       });
       
       if (checkResponse.data.correct) {
-        setMessage('Correct! Moving to next question...');
+        setMessage('✅ Correct! Moving to next question...');
         setCurrentAnswer('');
+        
+        // Unlock next question if sequential mode is enabled
+        if (quiz.sequential_unlock_enabled && currentQuestion < quiz.questions.length - 1) {
+          const nextQuestion = currentQuestion + 1;
+          if (!unlockedQuestions.includes(nextQuestion)) {
+            setUnlockedQuestions([...unlockedQuestions, nextQuestion]);
+            console.log(`Question ${nextQuestion + 1} unlocked`);
+          }
+        }
         
         if (currentQuestion < quiz.questions.length - 1) {
           setTimeout(() => {
             setCurrentQuestion(currentQuestion + 1);
             setMessage('');
             // Use settings page time limit if enabled
-            const pageTimeLimit = settings.pageTimeLimits ? settings.defaultPageTimeLimit : quiz.questions[currentQuestion + 1].time_limit_seconds;
+            const pageTimeLimit = settings.pageTimeLimits ? settings.defaultPageTimeLimit : quiz.questions[currentQuestion + 1].timeLimitSeconds;
             setTimeLeft(pageTimeLimit);
           }, 1500);
         } else {
@@ -115,10 +136,14 @@ const QuizTaker = () => {
           }, 1500);
         }
       } else {
-        setMessage('Incorrect answer. Try again!');
+        setMessage('❌ Incorrect answer. Try again!');
       }
     } catch (error) {
-      setMessage('Error checking answer. Try again!');
+      if (error.response?.status === 403) {
+        setMessage('🔒 This question is locked. Complete previous questions first.');
+      } else {
+        setMessage('Error checking answer. Try again!');
+      }
     }
   };
 
@@ -127,7 +152,7 @@ const QuizTaker = () => {
     if (teamName.trim()) {
       setTeamNameSet(true);
       // Use settings page time limit if enabled
-      const pageTimeLimit = settings.pageTimeLimits ? settings.defaultPageTimeLimit : quiz.questions[0].time_limit_seconds;
+      const pageTimeLimit = settings.pageTimeLimits ? settings.defaultPageTimeLimit : quiz.questions[0].timeLimitSeconds;
       setTimeLeft(pageTimeLimit);
     }
   };
@@ -159,7 +184,7 @@ const QuizTaker = () => {
   useEffect(() => {
     if (quiz && quiz.questions[currentQuestion]) {
       // Use settings page time limit if enabled
-      const pageTimeLimit = settings.pageTimeLimits ? settings.defaultPageTimeLimit : quiz.questions[currentQuestion].time_limit_seconds;
+      const pageTimeLimit = settings.pageTimeLimits ? settings.defaultPageTimeLimit : quiz.questions[currentQuestion].timeLimitSeconds;
       setTimeLeft(pageTimeLimit);
     }
   }, [currentQuestion, quiz, settings]);
@@ -185,8 +210,8 @@ const QuizTaker = () => {
     return (
       <div className="container">
         <div className="card" style={{ maxWidth: '400px', margin: '50px auto' }}>
-          {settings.showPageTitles && <h2>{quiz.quiz.title}</h2>}
-          <p>{quiz.quiz.description}</p>
+          {settings.showPageTitles && <h2>{quiz.title}</h2>}
+          <p>{quiz.description}</p>
           
           <form onSubmit={setTeamNameAndStart}>
             <div className="form-group">
@@ -209,10 +234,51 @@ const QuizTaker = () => {
   }
 
   const question = quiz.questions[currentQuestion];
+  const isQuestionLocked = quiz.sequential_unlock_enabled && !unlockedQuestions.includes(currentQuestion);
 
   return (
     <div className="container">
       <div className="card" style={{ maxWidth: '600px', margin: '50px auto' }}>
+        {quiz.sequential_unlock_enabled && (
+          <div style={{ marginBottom: '20px', padding: '12px', background: '#f8f9fa', borderRadius: '8px' }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#495057' }}>
+              Question Progress:
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {quiz.questions.map((_, index) => {
+                const isUnlocked = unlockedQuestions.includes(index);
+                const isCurrent = index === currentQuestion;
+                const isAnswered = answers[index] && answers[index].trim() !== '';
+                return (
+                  <button
+                    key={index}
+                    onClick={() => isUnlocked && setCurrentQuestion(index)}
+                    disabled={!isUnlocked}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '8px',
+                      border: isCurrent ? '2px solid #007bff' : '1px solid #dee2e6',
+                      background: isAnswered ? '#28a745' : isUnlocked ? '#fff' : '#e9ecef',
+                      color: isAnswered ? '#fff' : isUnlocked ? '#495057' : '#adb5bd',
+                      cursor: isUnlocked ? 'pointer' : 'not-allowed',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s',
+                      position: 'relative'
+                    }}
+                    title={isUnlocked ? `Question ${index + 1}` : `🔒 Locked - Answer previous questions first`}
+                  >
+                    {isUnlocked ? index + 1 : '🔒'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           {settings.showPageTitles && <h2>Team: {teamName}</h2>}
           <div style={{ textAlign: 'right' }}>
@@ -226,9 +292,31 @@ const QuizTaker = () => {
           </div>
         </div>
         
-        <div className="card">
+        <div className="card" style={{ position: 'relative', opacity: isQuestionLocked ? 0.6 : 1 }}>
+          {isQuestionLocked && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(255, 255, 255, 0.95)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px',
+              zIndex: 10
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
+              <h3 style={{ color: '#495057', marginBottom: '8px' }}>Question Locked</h3>
+              <p style={{ color: '#6c757d', textAlign: 'center', maxWidth: '300px' }}>
+                Complete the previous question correctly to unlock this one
+              </p>
+            </div>
+          )}
           {settings.autoNumberQuestions && <h3>Question {currentQuestion + 1}</h3>}
-          <p style={{ fontSize: '18px', marginBottom: '20px' }}>{question.question_text}</p>
+          <p style={{ fontSize: '18px', marginBottom: '20px' }}>{question.questionText}</p>
           
           <form onSubmit={submitAnswer}>
             <div className="form-group">
@@ -238,6 +326,7 @@ const QuizTaker = () => {
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 placeholder="Enter your answer..."
                 required
+                disabled={isQuestionLocked}
                 style={{ fontSize: '16px', padding: '12px' }}
               />
             </div>
@@ -245,7 +334,7 @@ const QuizTaker = () => {
               type="submit" 
               className="btn btn-primary" 
               style={{ width: '100%' }}
-              disabled={timeLeft === 0 || totalTimeLeft === 0}
+              disabled={timeLeft === 0 || totalTimeLeft === 0 || isQuestionLocked}
             >
               Submit Answer
             </button>

@@ -1,6 +1,6 @@
 # Escape Room Team Management App
 
-A full-stack web application built with React, Node.js/Express, and PostgreSQL for managing escape room teams.
+A full-stack web application built with React, Node.js/Express, and MongoDB (Atlas) for managing escape room teams.
 
 ## Features
 
@@ -26,7 +26,7 @@ escape-room-app/
 │   │   ├── middleware/    # Custom middleware
 │   │   ├── controllers/   # Route controllers
 │   │   └── utils/         # Database and utilities
-└── database/          # Database schema
+└── setup-db.js        # MongoDB setup and seeding
 ```
 
 ## Setup Instructions
@@ -34,32 +34,21 @@ escape-room-app/
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- PostgreSQL (v12 or higher)
+- MongoDB Atlas cluster (or local MongoDB)
 - npm or yarn
 
-### Database Setup
+### Database Setup (MongoDB Atlas)
 
-1. Install PostgreSQL
-
-2. Create `.env` file in backend directory:
-```bash
-cp backend/.env.example backend/.env
-```
-
-3. Update `backend/.env` with your database credentials:
+1. Create a MongoDB Atlas cluster and user with appropriate permissions.
+2. Add a connection string to `backend/.env`:
 ```
 PORT=5000
 JWT_SECRET=secret
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=escape_room_db
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/escape-room-app?retryWrites=true&w=majority
 ```
-
-4. Run the database setup script:
+3. Optionally run the setup script to initialize indexes and seed default settings:
 ```bash
-npm run setup:db
+node setup-db.js
 ```
 
 ### Backend Setup
@@ -126,6 +115,19 @@ npm run dev
 - Simple JWT authentication
 - Basic user and team management
 - Minimal validation
+- **Sequential Puzzle Unlocking** 🔒
+  - Progressive question unlocking based on correct answers
+  - Configurable per quiz (enabled/disabled)
+  - Visual progress indicators
+  - Server-side validation
+- **Comprehensive UI/UX Design System** ✨
+  - Consistent visual design across all pages
+  - Reusable components (Button, Card, Skeleton Loaders)
+  - Smooth animations with Framer Motion
+  - Toast notifications for user feedback
+  - Global error boundary
+  - Responsive 12-column grid system
+  - Dark theme support
 
 ## Technologies Used
 
@@ -133,12 +135,14 @@ npm run dev
 - React 18
 - React Router
 - Axios
-- CSS3
+- Framer Motion (animations)
+- CSS3 with Design System
 
 ### Backend
 - Node.js
 - Express.js
-- PostgreSQL
+- MongoDB Atlas
+- Mongoose
 - JWT
 - bcryptjs
 - Helmet
@@ -149,6 +153,24 @@ npm run dev
 The application runs on:
 - Frontend: http://localhost:3000
 - Backend: http://localhost:5000
+
+### Design System
+
+View the comprehensive design system documentation:
+- **Design System Page**: http://localhost:3000/design-system
+- **Component Examples**: http://localhost:3000/component-example
+- **Documentation**: See [UI_UX_README.md](UI_UX_README.md)
+- **Quick Start**: See [DESIGN_SYSTEM_QUICK_START.md](DESIGN_SYSTEM_QUICK_START.md)
+
+#### Key Features
+- 12-column responsive grid system
+- Standardized components (Button, Card, Skeleton Loaders)
+- Design tokens (colors, spacing, typography)
+- Smooth page transitions
+- Toast notifications
+- Global error handling
+- Dark theme support
+- Comprehensive documentation
 
 ## License
 

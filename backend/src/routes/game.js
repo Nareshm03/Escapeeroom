@@ -1,15 +1,15 @@
 const express = require('express');
-const db = require('../utils/db');
+const { GameStage } = require('../models');
 
 const router = express.Router();
 
 // Get game stages
 router.get('/stages', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM game_stages ORDER BY stage_number');
-    res.json(result.rows);
+    const stages = await GameStage.find().sort({ stageNumber: 1 });
+    res.json(stages);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get stages' });
+    res.status(500).json({ error: 'Failed to get stages: ' + error.message });
   }
 });
 
@@ -17,17 +17,16 @@ router.get('/stages', async (req, res) => {
 router.post('/submit', async (req, res) => {
   const { stageId, answer } = req.body;
   try {
-    const stageResult = await db.query('SELECT * FROM game_stages WHERE id = $1', [stageId]);
-    if (stageResult.rows.length === 0) {
+    const stage = await GameStage.findById(stageId);
+    if (!stage) {
       return res.status(404).json({ error: 'Stage not found' });
     }
     
-    const stage = stageResult.rows[0];
-    const isCorrect = answer.toLowerCase().trim() === stage.correct_answer.toLowerCase();
+    const isCorrect = answer.toLowerCase().trim() === stage.correctAnswer.toLowerCase();
     
     res.json({ correct: isCorrect, message: isCorrect ? 'Correct!' : 'Try again!' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to submit answer' });
+    res.status(500).json({ error: 'Failed to submit answer: ' + error.message });
   }
 });
 

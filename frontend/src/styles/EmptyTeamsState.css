@@ -1,0 +1,94 @@
+/* Empty Teams State */
+
+.empty-state {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  padding: var(--spacing-8);
+  text-align: center;
+}
+
+.floating-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary-300);
+}
+
+.empty-illustration {
+  margin-bottom: var(--spacing-6);
+  filter: drop-shadow(0 4px 12px rgba(102, 126, 234, 0.2));
+}
+
+.empty-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-neutral-900);
+  margin: 0 0 var(--spacing-3) 0;
+}
+
+.empty-description {
+  font-size: 1rem;
+  color: var(--color-neutral-600);
+  max-width: 400px;
+  margin: 0 0 var(--spacing-6) 0;
+  line-height: 1.6;
+}
+
+.empty-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  align-items: center;
+}
+
+/* Dark Mode */
+[data-theme="dark"] .empty-title {
+  color: var(--color-neutral-100);
+}
+
+[data-theme="dark"] .empty-description {
+  color: var(--color-neutral-400);
+}
+
+[data-theme="dark"] .dot {
+  background: var(--color-primary-600);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .empty-state {
+    min-height: 400px;
+    padding: var(--spacing-6);
+  }
+
+  .empty-illustration {
+    width: 150px;
+    height: 150px;
+  }
+
+  .empty-title {
+    font-size: 1.5rem;
+  }
+
+  .empty-description {
+    font-size: 0.875rem;
+  }
+}

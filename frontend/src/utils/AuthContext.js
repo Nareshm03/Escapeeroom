@@ -11,13 +11,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
+    const response = await api.post('/api/auth/login', { email, password });
     setUser(response.data.user);
     return response.data;
   };
 
   const register = async (email, password, name, teamName) => {
-    const response = await api.post('/auth/register', { 
+    const response = await api.post('/api/auth/register', { 
       email, password, name, teamName
     });
     setUser(response.data.user);

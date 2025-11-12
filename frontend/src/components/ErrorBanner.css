@@ -1,0 +1,113 @@
+.error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  animation: slideDown 0.3s ease-out;
+  contain: layout style paint;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.error-icon {
+  width: 20px;
+  height: 20px;
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.error-details {
+  flex: 1;
+}
+
+.error-message {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #991b1b;
+  margin-bottom: 4px;
+}
+
+.error-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: #dc2626;
+}
+
+.error-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.error-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.retry-btn:hover {
+  background: #dc2626;
+}
+
+.retry-btn:active {
+  transform: scale(0.95);
+}
+
+.dismiss-btn {
+  background: transparent;
+  color: #991b1b;
+  font-size: 1.5rem;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+}
+
+.dismiss-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 768px) {
+  .error-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .error-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

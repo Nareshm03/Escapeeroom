@@ -1,0 +1,163 @@
+/* Button UI Refinements - Comprehensive Styling */
+
+:root {
+  /* Button Colors */
+  --btn-primary-start: #6366F1;
+  --btn-primary-end: #22D3EE;
+  --btn-secondary-bg: #1E293B;
+  --btn-secondary-border: #334155;
+  --btn-text-light: #FFFFFF;
+  --btn-glow: rgba(99, 102, 241, 0.5);
+  
+  /* Button Dimensions */
+  --btn-radius: 20px;
+  --btn-padding: 32px;
+  --btn-min-height: 48px;
+}
+
+/* Primary Buttons */
+.btn-primary,
+button.btn-primary,
+.ds-btn-primary,
+.control-btn.btn-start,
+.btn-create-quiz,
+.quick-action-btn {
+  background: linear-gradient(90deg, var(--btn-primary-start), var(--btn-primary-end));
+  background-size: 200% 100%;
+  color: var(--btn-text-light);
+  border: none;
+  border-radius: var(--btn-radius);
+  padding: 16px var(--btn-padding);
+  min-height: var(--btn-min-height);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: gradientShift 3s ease infinite;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.btn-primary:hover,
+.ds-btn-primary:hover,
+.btn-create-quiz:hover {
+  box-shadow: 0 8px 24px var(--btn-glow);
+  transform: translateY(-2px);
+}
+
+.btn-primary:focus-visible,
+.ds-btn-primary:focus-visible {
+  outline: 2px solid var(--btn-primary-start);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+/* Secondary Buttons */
+.btn-secondary,
+button.btn-secondary,
+.ds-btn-secondary,
+.btn-cancel,
+.filter-btn {
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-text-light);
+  border-radius: var(--btn-radius);
+  padding: 16px var(--btn-padding);
+  min-height: var(--btn-min-height);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+}
+
+.btn-secondary:hover,
+.ds-btn-secondary:hover,
+.filter-btn:hover {
+  transform: scale(1.05);
+  border-color: var(--btn-primary-start);
+  box-shadow: 0 4px 12px rgba(51, 65, 85, 0.3);
+}
+
+.btn-secondary:focus-visible,
+.ds-btn-secondary:focus-visible {
+  outline: 2px solid var(--btn-secondary-border);
+  outline-offset: 2px;
+}
+
+/* Disabled State */
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.ds-btn-primary:disabled,
+.ds-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  animation: none;
+}
+
+/* Active State */
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Touch Targets */
+@media (pointer: coarse) {
+  .btn-primary,
+  .btn-secondary,
+  .ds-btn-primary,
+  .ds-btn-secondary {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .btn-secondary {
+  background: var(--btn-secondary-bg);
+  border-color: var(--btn-secondary-border);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .btn-primary,
+  .btn-secondary,
+  .ds-btn-primary,
+  .ds-btn-secondary {
+    padding: 14px 24px;
+  }
+}
+
+/* Performance Optimization */
+.btn-primary,
+.btn-secondary,
+.ds-btn-primary,
+.ds-btn-secondary {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn-secondary {
+    animation: none;
+    transition: none;
+  }
+  
+  .btn-primary:hover,
+  .btn-secondary:hover {
+    transform: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .btn-primary,
+  .btn-secondary {
+    border: 2px solid currentColor;
+  }
+}

@@ -30,12 +30,21 @@
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import './styles/design-system.css';
+@import './styles/visual-hierarchy.css';
+@import './styles/button-refinements.css';
+@import './styles/themes.css';
+@import './styles/grid.css';
+@import './styles/motion.css';
+@import './styles/responsive.css';
+@import './styles/animated-background.css';
+@import './styles/ui-polish.css';
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: var(--gradient-bg);
   min-height: 100vh;
-  color: var(--gray-800);
+  color: var(--text-primary);
   overflow-x: hidden;
   animation: fadeIn 0.6s ease-out;
 }
@@ -48,14 +57,14 @@ body {
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-card);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   padding: 32px;
   box-shadow: var(--shadow);
   margin-bottom: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: var(--transition);
+  border: 1px solid var(--border-primary);
+  transition: var(--transition), var(--theme-transition);
   position: relative;
   overflow: hidden;
 }
@@ -93,7 +102,7 @@ body {
 .card:hover {
   transform: translateY(-4px) scale(1.01);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(102, 126, 234, 0.2);
+  border-color: var(--border-accent);
 }
 
 .btn {
@@ -169,7 +178,7 @@ body {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: var(--gray-700);
+  color: var(--text-secondary);
   font-size: 14px;
   letter-spacing: 0.3px;
 }
@@ -178,7 +187,7 @@ body {
   display: block;
   margin-top: 4px;
   font-size: 12px;
-  color: var(--gray-500);
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
@@ -217,25 +226,7 @@ body {
   font-weight: 500;
 }
 
-.navbar {
-  background: #ffffff;
-  padding: 20px 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  margin-bottom: 0;
-  border-bottom: 1px solid #e2e8f0;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
 
-.navbar-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-}
 
 .team-list {
   display: grid;
@@ -314,13 +305,13 @@ body {
 }
 
 .dashboard-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-card);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   padding: 28px;
   box-shadow: var(--shadow);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: var(--transition);
+  border: 1px solid var(--border-primary);
+  transition: var(--transition), var(--theme-transition);
   position: relative;
   text-align: center;
   overflow: hidden;
@@ -345,7 +336,7 @@ body {
 .dashboard-card:hover {
   transform: translateY(-6px) scale(1.02);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(102, 126, 234, 0.3);
+  border-color: var(--border-accent);
 }
 
 
@@ -488,12 +479,8 @@ body {
   }
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .container {
-    padding: 16px 12px;
-  }
-  
+/* Mobile Responsiveness - Enhanced */
+@media (max-width: 767px) {
   .navbar-content {
     flex-wrap: wrap;
     gap: 8px;
@@ -509,7 +496,7 @@ body {
   }
   
   .dashboard-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: 1fr;
     gap: 16px;
   }
   
@@ -522,22 +509,16 @@ body {
     padding: 20px;
   }
   
-  /* Settings page mobile */
-  .container > div:last-child {
-    flex-direction: column;
+  h1 {
+    font-size: 1.75rem;
   }
   
-  .container > div:last-child > div:first-child {
-    width: 100%;
-    margin-bottom: 20px;
+  h2 {
+    font-size: 1.25rem;
   }
 }
 
 @media (max-width: 480px) {
-  .container {
-    padding: 12px 8px;
-  }
-  
   .navbar-content {
     flex-direction: column;
     align-items: stretch;
@@ -549,13 +530,12 @@ body {
   }
   
   .dashboard-grid {
-    grid-template-columns: 1fr;
     gap: 12px;
   }
   
   .card {
     padding: 16px;
-    border-radius: 16px;
+    border-radius: 12px;
   }
   
   .dashboard-card {
@@ -563,26 +543,57 @@ body {
   }
   
   h1 {
-    font-size: 1.8rem !important;
+    font-size: 1.5rem;
   }
   
   h2 {
-    font-size: 1.25rem !important;
+    font-size: 1.125rem;
   }
   
   .btn {
-    padding: 10px 16px;
-    font-size: 13px;
+    padding: 12px 16px;
+    font-size: 14px;
   }
 }
 
-/* Accessibility */
-.btn:focus,
-input:focus,
-select:focus,
-textarea:focus {
-  outline: 3px solid #667eea;
+/* Tablet Optimization */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .team-list {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+/* Desktop Optimization */
+@media (min-width: 1024px) {
+  .team-list {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+}
+
+/* Accessibility - Focus Rings */
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #667eea;
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+}
+
+[data-theme="dark"] .btn:focus-visible,
+[data-theme="dark"] input:focus-visible,
+[data-theme="dark"] select:focus-visible,
+[data-theme="dark"] textarea:focus-visible,
+[data-theme="dark"] a:focus-visible,
+[data-theme="dark"] button:focus-visible {
+  outline: 2px solid #818cf8;
+  box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.3);
 }
 
 .sr-only {
@@ -595,6 +606,20 @@ textarea:focus {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 8px 16px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: #667eea;
+  color: white;
+  z-index: 9999;
 }
 
 /* High contrast mode support */

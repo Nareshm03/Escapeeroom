@@ -1,23 +1,14 @@
 const express = require('express');
-const db = require('../utils/db');
+const { Settings } = require('../models');
+
 const router = express.Router();
 
 // Get settings
 router.get('/', async (req, res) => {
   try {
-    // Create table if it doesn't exist
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS quiz_settings (
-        id SERIAL PRIMARY KEY,
-        settings JSONB NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    
-    const result = await db.query('SELECT * FROM quiz_settings LIMIT 1');
-    if (result.rows.length > 0) {
-      res.json(result.rows[0].settings);
+    const settingsDoc = await Settings.findOne();
+    if (settingsDoc) {
+      res.json(settingsDoc.settings);
     } else {
       res.json({});
     }
@@ -33,31 +24,17 @@ router.post('/', async (req, res) => {
   try {
     const settings = req.body;
     
-    // Create table if it doesn't exist
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS quiz_settings (
-        id SERIAL PRIMARY KEY,
-        settings JSONB NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    
     // Check if settings exist
-    const existing = await db.query('SELECT id FROM quiz_settings LIMIT 1');
+    let settingsDoc = await Settings.findOne();
     
-    if (existing.rows.length > 0) {
+    if (settingsDoc) {
       // Update existing settings
-      await db.query(
-        'UPDATE quiz_settings SET settings = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-        [JSON.stringify(settings), existing.rows[0].id]
-      );
+      settingsDoc.settings = settings;
+      await settingsDoc.save();
     } else {
       // Create new settings
-      await db.query(
-        'INSERT INTO quiz_settings (settings) VALUES ($1)',
-        [JSON.stringify(settings)]
-      );
+      settingsDoc = new Settings({ settings });
+      await settingsDoc.save();
     }
     
     console.log('Settings saved successfully');

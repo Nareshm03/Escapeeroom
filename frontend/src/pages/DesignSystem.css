@@ -1,0 +1,162 @@
+/* Design System Page Styles */
+
+.ds-page-header {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.mb-lg {
+  margin-bottom: 32px;
+}
+
+/* Color Grid */
+.ds-color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.ds-color-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ds-color-swatch {
+  width: 100%;
+  height: 80px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ds-color-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ds-code {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #667eea;
+}
+
+/* Typography Showcase */
+.ds-typography-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Spacing Showcase */
+.ds-spacing-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ds-spacing-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ds-spacing-bar {
+  height: 32px;
+  background: #667eea;
+  border-radius: 4px;
+}
+
+.ds-spacing-info {
+  display: flex;
+  gap: 12px;
+}
+
+/* Shadow Grid */
+.ds-shadow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 32px;
+}
+
+.ds-shadow-item {
+  text-align: center;
+}
+
+.ds-shadow-box {
+  width: 100%;
+  height: 100px;
+  background: white;
+  border-radius: 8px;
+}
+
+/* Button Showcase */
+.ds-button-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ds-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Card Showcase */
+.ds-card-showcase {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+/* Skeleton Showcase */
+.ds-skeleton-showcase {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+/* Grid Demo */
+.ds-grid-demo {
+  background: #667eea;
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Dark Theme */
+[data-theme="dark"] .ds-code {
+  background: #374151;
+  color: #818cf8;
+}
+
+[data-theme="dark"] .ds-shadow-box {
+  background: #1f2937;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ds-color-grid,
+  .ds-card-showcase,
+  .ds-skeleton-showcase {
+    grid-template-columns: 1fr;
+  }
+  
+  .ds-shadow-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .ds-button-row {
+    flex-direction: column;
+  }
+  
+  .ds-button-row button {
+    width: 100%;
+  }
+}

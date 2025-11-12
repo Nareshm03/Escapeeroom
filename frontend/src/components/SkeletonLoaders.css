@@ -1,0 +1,139 @@
+/* Skeleton Loader Styles */
+
+.ds-skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0%,
+    #e0e0e0 50%,
+    #f0f0f0 100%
+  );
+  background-size: 200% 100%;
+  animation: ds-skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes ds-skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Card Skeleton */
+.ds-skeleton-card {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.ds-skeleton-title {
+  height: 24px;
+  width: 60%;
+  margin-bottom: 16px;
+}
+
+.ds-skeleton-text {
+  height: 16px;
+  margin-bottom: 12px;
+}
+
+.ds-skeleton-button {
+  height: 40px;
+  width: 120px;
+  margin-top: 16px;
+  border-radius: 8px;
+}
+
+/* List Skeleton */
+.ds-skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ds-skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.ds-skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Image Skeleton */
+.ds-skeleton-image {
+  border-radius: 8px;
+}
+
+/* Text Block Skeleton */
+.ds-skeleton-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Table Skeleton */
+.ds-skeleton-table {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.ds-skeleton-table-header {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 12px;
+}
+
+.ds-skeleton-table-row {
+  display: grid;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* Grid Skeleton */
+.ds-skeleton-grid {
+  display: grid;
+  gap: 24px;
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] .ds-skeleton {
+  background: linear-gradient(
+    90deg,
+    #2d3748 0%,
+    #1a202c 50%,
+    #2d3748 100%
+  );
+  background-size: 200% 100%;
+}
+
+[data-theme="dark"] .ds-skeleton-card,
+[data-theme="dark"] .ds-skeleton-list-item,
+[data-theme="dark"] .ds-skeleton-table {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ds-skeleton-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .ds-skeleton-card {
+    padding: 16px;
+  }
+}

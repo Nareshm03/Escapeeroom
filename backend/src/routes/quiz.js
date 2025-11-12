@@ -1,54 +1,34 @@
 const express = require('express');
-const db = require('../utils/db');
+const { Quiz, QuizSubmission, Team, User } = require('../models');
+
 const router = express.Router();
 
 // Create quiz (admin)
 router.post('/create', async (req, res) => {
-  const { title, description, questions, totalTimeMinutes } = req.body;
+  const { title, description, questions, totalTimeMinutes, sequential_unlock_enabled } = req.body;
   const quizLink = Math.random().toString(36).substring(2, 15);
-  
-  console.log('Creating quiz:', { title, description, questionsCount: questions?.length, totalTimeMinutes });
-  
+
+  console.log('Creating quiz:', { title, description, questionsCount: questions?.length, totalTimeMinutes, sequential_unlock_enabled });
+
   try {
-    // Create tables if they don't exist
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS quizzes (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        description TEXT,
-        quiz_link VARCHAR(255) UNIQUE NOT NULL,
-        is_published BOOLEAN DEFAULT FALSE,
-        total_time_minutes INTEGER DEFAULT 30,
-        created_by INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS quiz_questions (
-        id SERIAL PRIMARY KEY,
-        quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
-        question_text TEXT NOT NULL,
-        correct_answer TEXT NOT NULL,
-        question_order INTEGER NOT NULL,
-        time_limit_seconds INTEGER DEFAULT 120
-      )
-    `);
-    const quizResult = await db.query(
-      'INSERT INTO quizzes (title, description, quiz_link, total_time_minutes, created_by) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [title, description, quizLink, totalTimeMinutes || 30, 1]
-    );
-    
-    const quiz = quizResult.rows[0];
-    
-    for (let i = 0; i < questions.length; i++) {
-      await db.query(
-        'INSERT INTO quiz_questions (quiz_id, question_text, correct_answer, question_order, time_limit_seconds) VALUES ($1, $2, $3, $4, $5)',
-        [quiz.id, questions[i].question, questions[i].answer, i + 1, questions[i].timeLimit || 120]
-      );
-    }
-    
-    console.log('Quiz created successfully:', quiz.id);
+    const quiz = new Quiz({
+      title,
+      description,
+      quizLink,
+      totalTimeMinutes: totalTimeMinutes || 30,
+      sequential_unlock_enabled: sequential_unlock_enabled !== undefined ? sequential_unlock_enabled : true,
+      createdBy: null, // Temporarily set to null until proper auth is implemented
+      questions: questions.map((q, index) => ({
+        questionText: q.question,
+        correctAnswer: q.answer,
+        questionOrder: index + 1,
+        timeLimitSeconds: q.timeLimit || 120
+      }))
+    });
+
+    await quiz.save();
+
+    console.log('Quiz created successfully:', quiz._id);
     res.json({ quiz, link: `/quiz/${quizLink}` });
   } catch (error) {
     console.error('Quiz creation error:', error);
@@ -59,142 +39,225 @@ router.post('/create', async (req, res) => {
 // Publish quiz
 router.post('/:id/publish', async (req, res) => {
   try {
-    await db.query('UPDATE quizzes SET is_published = TRUE WHERE id = $1', [req.params.id]);
-    res.json({ message: 'Quiz published' });
+    console.log('Publishing quiz with ID:', req.params.id);
+    const quiz = await Quiz.findByIdAndUpdate(
+      req.params.id,
+      { isPublished: true },
+      { new: true }
+    );
+
+    if (!quiz) {
+      console.error('Quiz not found for publishing:', req.params.id);
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    console.log('Quiz published successfully:', quiz._id, 'Link:', quiz.quizLink);
+    res.json({ message: 'Quiz published', quizLink: quiz.quizLink });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to publish quiz' });
+    console.error('Failed to publish quiz:', error);
+    res.status(500).json({ error: 'Failed to publish quiz: ' + error.message });
   }
 });
 
 // Get quiz by link (public)
 router.get('/:link', async (req, res) => {
   try {
-    const quizResult = await db.query(
-      'SELECT * FROM quizzes WHERE quiz_link = $1 AND is_published = TRUE',
-      [req.params.link]
-    );
-    
-    if (quizResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Quiz not found' });
-    }
-    
-    const questionsResult = await db.query(
-      'SELECT question_text, question_order, time_limit_seconds FROM quiz_questions WHERE quiz_id = $1 ORDER BY question_order',
-      [quizResult.rows[0].id]
-    );
-    
-    res.json({
-      quiz: quizResult.rows[0],
-      questions: questionsResult.rows
+    console.log('Fetching quiz by link:', req.params.link);
+    const quiz = await Quiz.findOne({
+      quizLink: req.params.link,
+      isPublished: true
     });
+
+    if (!quiz) {
+      console.error('Quiz not found or not published:', req.params.link);
+      return res.status(404).json({ error: 'Quiz not found or not published' });
+    }
+
+    console.log('Quiz found and accessible:', quiz._id);
+
+    // Return only necessary fields for public access
+    const publicQuiz = {
+      _id: quiz._id,
+      title: quiz.title,
+      description: quiz.description,
+      totalTimeMinutes: quiz.totalTimeMinutes,
+      sequential_unlock_enabled: quiz.sequential_unlock_enabled,
+      questions: quiz.questions.map(q => ({
+        questionText: q.questionText,
+        questionOrder: q.questionOrder,
+        timeLimitSeconds: q.timeLimitSeconds
+      }))
+    };
+
+    res.json({ quiz: publicQuiz });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get quiz' });
+    console.error('Failed to get quiz:', error);
+    res.status(500).json({ error: 'Failed to get quiz: ' + error.message });
   }
 });
 
 // Check single answer
 router.post('/:link/check', async (req, res) => {
-  const { questionIndex, answer } = req.body;
-  
+  const { questionIndex, answer, unlockedQuestions } = req.body;
+
   try {
-    const quizResult = await db.query(
-      'SELECT * FROM quizzes WHERE quiz_link = $1 AND is_published = TRUE',
-      [req.params.link]
-    );
-    
-    if (quizResult.rows.length === 0) {
+    console.log('Checking answer for quiz link:', req.params.link, 'question:', questionIndex);
+    const quiz = await Quiz.findOne({
+      quizLink: req.params.link,
+      isPublished: true
+    });
+
+    if (!quiz) {
+      console.error('Quiz not found for answer check:', req.params.link);
       return res.status(404).json({ error: 'Quiz not found' });
     }
-    
-    const quiz = quizResult.rows[0];
-    const questionResult = await db.query(
-      'SELECT correct_answer FROM quiz_questions WHERE quiz_id = $1 AND question_order = $2',
-      [quiz.id, questionIndex + 1]
-    );
-    
-    if (questionResult.rows.length === 0) {
+
+    // Validate sequential unlock if enabled
+    if (quiz.sequential_unlock_enabled && unlockedQuestions) {
+      if (!unlockedQuestions.includes(questionIndex)) {
+        console.error('Sequence violation: Question', questionIndex, 'is locked');
+        return res.status(403).json({ error: 'Question is locked. Complete previous questions first.' });
+      }
+    }
+
+    const question = quiz.questions.find(q => q.questionOrder === questionIndex + 1);
+
+    if (!question) {
+      console.error('Question not found:', questionIndex + 1, 'in quiz:', req.params.link);
       return res.status(404).json({ error: 'Question not found' });
     }
-    
-    const isCorrect = answer.toLowerCase().trim() === questionResult.rows[0].correct_answer.toLowerCase().trim();
+
+    const isCorrect = answer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim();
+    console.log('Answer check result:', isCorrect ? 'correct' : 'incorrect');
     res.json({ correct: isCorrect });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to check answer' });
+    console.error('Failed to check answer:', error);
+    res.status(500).json({ error: 'Failed to check answer: ' + error.message });
   }
 });
 
 // Submit quiz answers (public)
 router.post('/:link/submit', async (req, res) => {
-  const { teamName, answers } = req.body;
-  
+  const { teamName, answers, startTime } = req.body;
+
   try {
-    const quizResult = await db.query(
-      'SELECT * FROM quizzes WHERE quiz_link = $1 AND is_published = TRUE',
-      [req.params.link]
-    );
-    
-    if (quizResult.rows.length === 0) {
+    console.log('Submitting quiz answers for link:', req.params.link, 'team:', teamName);
+    const quiz = await Quiz.findOne({
+      quizLink: req.params.link,
+      isPublished: true
+    });
+
+    if (!quiz) {
+      console.error('Quiz not found for submission:', req.params.link);
       return res.status(404).json({ error: 'Quiz not found' });
     }
-    
-    const quiz = quizResult.rows[0];
-    const correctAnswers = await db.query(
-      'SELECT correct_answer FROM quiz_questions WHERE quiz_id = $1 ORDER BY question_order',
-      [quiz.id]
-    );
-    
+
     let score = 0;
-    correctAnswers.rows.forEach((correct, index) => {
-      if (answers[index] && answers[index].toLowerCase().trim() === correct.correct_answer.toLowerCase().trim()) {
-        score++;
-      }
+    const processedAnswers = answers.map((answer, index) => {
+      const question = quiz.questions.find(q => q.questionOrder === index + 1);
+      const isCorrect = question &&
+        answer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim();
+
+      if (isCorrect) score++;
+
+      return {
+        questionOrder: index + 1,
+        answer,
+        isCorrect,
+        timeSpent: 0 // Default time spent, could be enhanced later
+      };
     });
-    
-    // Create team if it doesn't exist
-    const existingTeam = await db.query(
-      'SELECT id FROM teams WHERE name = $1',
-      [teamName]
-    );
-    
-    if (existingTeam.rows.length === 0) {
-      await db.query(
-        'INSERT INTO teams (name, description, created_by) VALUES ($1, $2, $3)',
-        [teamName, `Team created from quiz: ${quiz.title}`, 1]
-      );
+
+    // Create team if it doesn't exist (skip team creation for now to avoid validation issues)
+    let team = await Team.findOne({ name: teamName });
+    if (!team) {
+      console.log('Team not found, proceeding without team creation for quiz submission');
     }
-    
-    await db.query(
-      'INSERT INTO quiz_submissions (quiz_id, team_name, answers, score) VALUES ($1, $2, $3, $4)',
-      [quiz.id, teamName, answers, score]
-    );
-    
-    res.json({ score, total: correctAnswers.rows.length });
+
+    // Create quiz submission using standardized schema
+    const submission = new QuizSubmission({
+      quiz: quiz._id,
+      teamName,
+      answers: processedAnswers,
+      score,
+      startTime: startTime ? new Date(startTime) : undefined,
+      endTime: new Date()
+    });
+
+    await submission.save();
+    console.log('Quiz submission saved successfully:', submission._id, 'Score:', score);
+
+    res.json({ score, total: quiz.questions.length, percentage: submission.percentage });
   } catch (error) {
     console.error('Quiz submission error:', error);
-    res.status(500).json({ error: 'Failed to submit quiz' });
+    res.status(500).json({ error: 'Failed to submit quiz: ' + error.message });
   }
 });
 
-// Get all quizzes (admin)
+// Get all quizzes with pagination (admin)
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM quizzes ORDER BY created_at DESC');
-    res.json(result.rows);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const status = req.query.status || 'all';
+
+    const query = {};
+    if (search) {
+      query.title = { $regex: search, $options: 'i' };
+    }
+    if (status !== 'all') {
+      query.isPublished = status === 'published';
+    }
+
+    const total = await Quiz.countDocuments(query);
+    const quizzes = await Quiz.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({
+      quizzes,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get quizzes' });
+    res.status(500).json({ error: 'Failed to get quizzes: ' + error.message });
+  }
+});
+
+// Delete quiz (admin)
+router.delete('/:id', async (req, res) => {
+  try {
+    const quiz = await Quiz.findByIdAndDelete(req.params.id);
+    if (!quiz) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+    res.json({ message: 'Quiz deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete quiz: ' + error.message });
   }
 });
 
 // Get quiz results (admin)
 router.get('/:id/results', async (req, res) => {
   try {
-    const result = await db.query(
-      'SELECT team_name, score, submitted_at FROM quiz_submissions WHERE quiz_id = $1 ORDER BY score DESC, submitted_at ASC',
-      [req.params.id]
-    );
-    res.json(result.rows);
+    const submissions = await QuizSubmission.find({ quiz: req.params.id })
+      .sort({ score: -1, submittedAt: 1 });
+    
+    const results = submissions.map(submission => ({
+      team_name: submission.teamName,
+      score: submission.score,
+      submitted_at: submission.submittedAt
+    }));
+    
+    res.json(results);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get quiz results' });
+    res.status(500).json({ error: 'Failed to get quiz results: ' + error.message });
   }
 });
 
