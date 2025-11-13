@@ -1,0 +1,24 @@
+{
+  "name": "Escape Room App",
+  "description": "Team management app for escape rooms with quizzes",
+  "repository": "https://github.com/yourusername/escape-room-app",
+  "keywords": ["node", "express", "react", "mongodb", "escape-room"],
+  "env": {
+    "JWT_SECRET": {
+      "description": "Secret key for JWT tokens",
+      "generator": "secret"
+    },
+    "MONGODB_URI": {
+      "description": "MongoDB Atlas connection string",
+      "required": true
+    },
+    "NODE_ENV": {
+      "value": "production"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}

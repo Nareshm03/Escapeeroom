@@ -1,7 +1,56 @@
 const express = require('express');
-const { Quiz, QuizSubmission, Team, User } = require('../models');
+const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
+const { Quiz, QuizSubmission, QuizSession, Team, User } = require('../models');
+const { authenticateUser } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+// Start quiz session with JWT token
+router.post('/start', authenticateUser, async (req, res) => {
+  try {
+    const { quizId } = req.body;
+    
+    if (!quizId) {
+      return res.status(400).json({ error: 'quizId is required' });
+    }
+
+    const userId = req.user.id;
+    
+    // Verify quiz exists
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    const sessionId = uuidv4();
+    const payload = { 
+      userId, 
+      quizId, 
+      sessionId, 
+      iat: Math.floor(Date.now() / 1000)
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '3h' });
+
+    await QuizSession.create({ 
+      sessionId, 
+      userId, 
+      quizId, 
+      startedAt: new Date(), 
+      status: 'active' 
+    });
+
+    const frontendUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
+    const startUrl = `${frontendUrl}/secure-quiz?token=${token}`;
+
+    return res.json({ startUrl, token });
+  } catch (error) {
+    console.error('Quiz start error:', error);
+    return res.status(500).json({ error: 'Failed to start quiz session' });
+  }
+});
+
 
 // Create quiz (admin)
 router.post('/create', async (req, res) => {

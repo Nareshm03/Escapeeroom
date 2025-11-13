@@ -46,8 +46,15 @@ app.use('/api/event', eventRoutes);
 console.log('Event route registered at /api/event');
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  const mongoose = require('mongoose');
+  const health = {
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+  };
+  res.json(health);
 });
 
 // Error handling middleware

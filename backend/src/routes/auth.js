@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const { User, Team } = require('../models');
 
 const router = express.Router();
@@ -33,9 +34,17 @@ router.post('/register', async (req, res) => {
     });
     await team.save();
     
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
     res.status(201).json({ 
       user: { id: user._id, email: user.email, name: user.name },
-      team: { id: team._id, name: team.name }
+      team: { id: team._id, name: team.name },
+      token
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -66,13 +75,21 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     res.json({ 
       user: { 
         id: user._id, 
         email: user.email, 
         name: user.name,
         role: user.role 
-      } 
+      },
+      token
     });
   } catch (error) {
     console.error('Login error:', error.message);

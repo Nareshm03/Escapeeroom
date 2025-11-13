@@ -122,6 +122,7 @@ escape-room-app/
 |--------|----------|-------------|
 | GET | `/api/quiz` | Get all quizzes |
 | POST | `/api/quiz` | Create new quiz |
+| POST | `/api/quiz/start` | Start secure quiz session (requires auth) |
 | GET | `/api/quiz/:id` | Get quiz details |
 | POST | `/api/quiz/:id/submit` | Submit quiz answers |
 | GET | `/api/quiz/:id/results` | Get quiz results |
@@ -131,6 +132,40 @@ escape-room-app/
 |--------|----------|-------------|
 | GET | `/api/users/profile` | Get user profile |
 | GET | `/api/users/search` | Search users by email |
+
+## 🔐 Quiz Session Management
+
+Secure quiz sessions with JWT-based authentication:
+
+- **Session Tracking** - Unique UUID for each quiz attempt
+- **JWT Tokens** - 3-hour expiration for quiz access
+- **Authentication** - User verification before quiz start
+- **Database Persistence** - All sessions stored and tracked
+
+For detailed documentation, see:
+- [Quiz Session API Documentation](QUIZ_SESSION_API.md)
+- [Implementation Summary](IMPLEMENTATION_SUMMARY.md)
+- [Quick Start Guide](QUICK_START_QUIZ_SESSION.md)
+
+### Start a Quiz Session
+
+```javascript
+// 1. Login to get auth token
+const loginRes = await axios.post('/api/auth/login', {
+  email: 'user@example.com',
+  password: 'password123'
+});
+
+// 2. Start quiz session
+const startRes = await axios.post(
+  '/api/quiz/start',
+  { quizId: '507f1f77bcf86cd799439011' },
+  { headers: { Authorization: `Bearer ${loginRes.data.token}` } }
+);
+
+// 3. Redirect to secure quiz
+window.location.href = startRes.data.startUrl;
+```
 
 ## 🛠️ Tech Stack
 
