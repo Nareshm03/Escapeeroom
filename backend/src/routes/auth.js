@@ -25,7 +25,7 @@ router.post('/register', async (req, res) => {
 
     // Create team
     const team = new Team({
-      name: teamName,
+      name: teamName || `${name}'s Team`,
       createdBy: user._id,
       members: [{
         user: user._id,
